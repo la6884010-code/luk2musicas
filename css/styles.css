@@ -451,18 +451,3 @@ body::before{
   z-index: 5;
   align-self: unset;
 }
-/* ══ HERO K2 — ao lado do vídeo ══ */
-.hero {
-  grid-template-columns: 1fr;
-  position: relative;
-}
-.hero-right {
-  position: relative;
-}
-.hero-k2-wrap {
-  position: absolute;
-  right: -80px;
-  bottom: 40px;
-  z-index: 5;
-  align-self: unset;
-}
