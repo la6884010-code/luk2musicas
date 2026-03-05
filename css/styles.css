@@ -516,3 +516,33 @@ body::before{
   transition: transform 0.18s ease;
   transform-origin: bottom center;
 }
+/* sombra de contato do mascote */
+
+.mascot-shadow{
+  width: 90px;
+  height: 18px;
+
+  background: radial-gradient(
+    ellipse,
+    rgba(0,0,0,0.35) 0%,
+    rgba(0,0,0,0.15) 40%,
+    transparent 70%
+  );
+
+  border-radius: 50%;
+
+  margin-top: -8px;
+
+  filter: blur(4px);
+
+  opacity: 0.7;
+
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+/* quando o mascote "respira" a sombra reage */
+
+.pricing-col.isBeat .mascot-shadow{
+  transform: scaleX(1.2);
+  opacity: 0.9;
+}
