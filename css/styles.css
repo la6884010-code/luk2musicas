@@ -405,3 +405,34 @@ body::before{
     border-radius:0!important; border:none!important;
   }
 }
+/* ══ HERO K2 — flutuante, NÃO ancorado ═══════════ */
+.hero-k2 {
+  animation: hero-k2-float 3.8s ease-in-out infinite !important;
+}
+@keyframes hero-k2-float {
+  0%   { transform: translateY(0px)   rotate(-3deg); }
+  25%  { transform: translateY(-12px) rotate(1deg);  }
+  55%  { transform: translateY(-6px)  rotate(-1.5deg); }
+  100% { transform: translateY(0px)   rotate(-3deg); }
+}
+.hero-k2-wrap:hover .hero-k2 {
+  filter: drop-shadow(0 0 32px rgba(0,220,255,0.9)) !important;
+  animation: hero-k2-curious 0.5s ease forwards,
+             hero-k2-float 3.8s ease-in-out 0.5s infinite !important;
+}
+@keyframes hero-k2-curious {
+  0%   { transform: translateY(0)    rotate(-3deg); }
+  50%  { transform: translateY(-18px) rotate(8deg) scale(1.06); }
+  100% { transform: translateY(-12px) rotate(1deg); }
+}
+
+/* ══ PRICING K2 — ancorado, NÃO flutua livremente ═ */
+.k2-img {
+  animation: pricing-k2-idle 3.5s ease-in-out infinite !important;
+}
+@keyframes pricing-k2-idle {
+  0%   { transform: translateY(0px)  rotate(-1deg); }
+  30%  { transform: translateY(-6px) rotate(1.5deg); }
+  65%  { transform: translateY(-3px) rotate(-0.5deg); }
+  100% { transform: translateY(0px)  rotate(-1deg); }
+}
