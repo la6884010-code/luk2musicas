@@ -25,7 +25,7 @@
 </header>
 
 <!-- Hero Section -->
-<main class="hero">
+<main class="hero" style="position:relative; align-items:flex-end;">
   <div class="hero-left">
     <h1>
       Transforme Sua Música.<br>
@@ -40,6 +40,12 @@
       <a class="ghost" href="javascript:void(0);" id="hero-demo-btn">Ver demo</a>
     </div>
   </div>
+  <!-- K2 Hero Avatar -->
+  <div class="hero-k2-wrap">
+    <div class="hero-k2-bubble">Olha isso! 👀</div>
+    <img src="assets/images/k2.png" class="hero-k2" id="heroK2" alt="K2" />
+  </div>
+
   <div class="hero-right">
     <div class="card">
       <div class="card-title">Preview</div>
@@ -283,7 +289,51 @@
 </style>
 
 <style>
-/* ── MASCOTES ───────────────────────── */
+/* ── HERO K2 ───────────────────────── */
+.hero-k2-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  z-index: 3;
+  margin-bottom: -10px;
+}
+.hero-k2 {
+  width: 200px;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 24px rgba(0,200,255,0.7));
+  animation: k2-float 3s ease-in-out infinite, k2-hero-look 6s ease-in-out infinite;
+  transform-origin: bottom center;
+  cursor: pointer;
+}
+@keyframes k2-hero-look {
+  0%,100% { transform: translateY(0px) rotate(-4deg) scaleX(1); }
+  30%      { transform: translateY(-8px) rotate(3deg) scaleX(1); }
+  60%      { transform: translateY(-4px) rotate(-2deg) scaleX(-1); }
+}
+.hero-k2-bubble {
+  background: rgba(0,255,255,0.1);
+  border: 1px solid rgba(0,255,255,0.4);
+  color: #00ffff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 20px;
+  margin-bottom: 10px;
+  animation: bubble-pulse 3s ease-in-out infinite;
+  white-space: nowrap;
+}
+@keyframes bubble-pulse {
+  0%,100% { opacity: 0.7; transform: scale(1); }
+  50%      { opacity: 1; transform: scale(1.05); }
+}
+@media (max-width: 900px) {
+  .hero-k2-wrap { display: none; }
+}
+
+/* ── MASCOTES PRICING ───────────────────────── */
 .mascot-stage {
   display: flex;
   justify-content: space-between;
@@ -295,55 +345,70 @@
   position: relative;
   z-index: 2;
 }
-
 .mascot-wrap {
   display: flex;
   flex-direction: column;
   align-items: center;
   position: relative;
 }
-
+.mascot-avatar-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .mascot-label {
   font-size: 11px;
   font-weight: 900;
   letter-spacing: 3px;
-  color: rgba(0,255,255,0.6);
-  margin-bottom: 6px;
+  color: rgba(0,255,255,0.7);
+  margin-bottom: 8px;
   text-transform: uppercase;
 }
-.aria-label { color: rgba(255,0,255,0.7); }
+.ju-label { color: rgba(255,0,255,0.8); }
 
 .mascot {
-  width: 160px;
-  height: 160px;
+  width: 220px;
+  height: 220px;
   object-fit: contain;
-  border-radius: 16px;
-  filter: drop-shadow(0 0 18px rgba(0,255,255,0.4));
+  position: relative;
+  z-index: 2;
 }
 
-/* K2 animations */
+/* K2 pricing */
 .k2 {
-  animation: k2-float 3s ease-in-out infinite, k2-beat 0.8s ease-in-out infinite;
-  filter: drop-shadow(0 0 20px rgba(100,150,255,0.5));
+  animation: k2-float 2.8s ease-in-out infinite;
+  filter: drop-shadow(0 0 22px rgba(0,180,255,0.6));
   transform-origin: bottom center;
+  cursor: pointer;
+  pointer-events: all;
 }
-
+.k2-glow-ring {
+  position: absolute;
+  width: 180px;
+  height: 60px;
+  border-radius: 50%;
+  border: 2px solid rgba(0,255,255,0.2);
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: k2-shadow-pulse 2.8s ease-in-out infinite;
+  z-index: 1;
+}
 @keyframes k2-float {
-  0%, 100% { transform: translateY(0px) rotate(-3deg); }
-  50%       { transform: translateY(-10px) rotate(3deg); }
+  0%,100% { transform: translateY(0px) rotate(-3deg); }
+  50%      { transform: translateY(-14px) rotate(3deg); }
 }
-
-@keyframes k2-beat {
-  0%, 100% { filter: drop-shadow(0 0 20px rgba(100,150,255,0.4)); }
-  50%       { filter: drop-shadow(0 0 36px rgba(255,100,255,0.8)) brightness(1.2); }
+@keyframes k2-shadow-pulse {
+  0%,100% { opacity: 0.3; transform: translateX(-50%) scaleX(0.9); }
+  50%      { opacity: 0.6; transform: translateX(-50%) scaleX(1.1); }
 }
-
-/* K2 rings — pulso */
 .k2-rings {
   position: absolute;
   bottom: -10px;
   left: 50%;
   transform: translateX(-50%);
+  z-index: 1;
 }
 .k2-ring {
   position: absolute;
@@ -352,53 +417,85 @@
   transform: translateX(-50%) translateY(-50%);
   animation: k2-ring-pulse 1.6s ease-out infinite;
 }
-.k2-ring:nth-child(1) { width: 60px;  height: 20px; animation-delay: 0s; }
-.k2-ring:nth-child(2) { width: 100px; height: 30px; animation-delay: 0.3s; }
-.k2-ring:nth-child(3) { width: 140px; height: 40px; animation-delay: 0.6s; }
-
+.k2-ring:nth-child(1) { width: 70px;  height: 22px; animation-delay: 0s; }
+.k2-ring:nth-child(2) { width: 110px; height: 34px; animation-delay: 0.35s; }
+.k2-ring:nth-child(3) { width: 150px; height: 46px; animation-delay: 0.7s; }
 @keyframes k2-ring-pulse {
   0%   { opacity: 0.6; transform: translateX(-50%) translateY(-50%) scale(0.8); }
-  100% { opacity: 0;   transform: translateX(-50%) translateY(-50%) scale(1.4); }
+  100% { opacity: 0;   transform: translateX(-50%) translateY(-50%) scale(1.5); }
 }
 
-/* ARIA animations */
-.aria {
-  animation: aria-rise 4s ease-in-out infinite;
-  filter: drop-shadow(0 0 28px rgba(255,0,255,0.5));
+/* K2 pixel eye burst on click */
+.pixel-burst {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 1px;
+  pointer-events: none;
+  z-index: 999;
+  animation: pixel-fly 0.7s ease-out forwards;
+}
+@keyframes pixel-fly {
+  0%   { opacity: 1; transform: translate(0,0) scale(1); }
+  100% { opacity: 0; transform: var(--tx) scale(0.3); }
+}
+
+/* JU pricing */
+.ju {
+  animation: ju-rise 4s ease-in-out infinite;
+  filter: drop-shadow(0 0 30px rgba(255,0,200,0.6));
   transform-origin: bottom center;
+  width: 260px;
+  height: 260px;
+}
+.ju-aura {
+  position: absolute;
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,0,255,0.12) 0%, transparent 70%);
+  animation: ju-aura-pulse 3s ease-in-out infinite;
+  z-index: 1;
+  pointer-events: none;
+}
+@keyframes ju-rise {
+  0%,100% { transform: translateY(0px);   filter: drop-shadow(0 0 30px rgba(255,0,200,0.6)); }
+  50%      { transform: translateY(-12px); filter: drop-shadow(0 0 55px rgba(255,0,255,1)) brightness(1.15); }
+}
+@keyframes ju-aura-pulse {
+  0%,100% { transform: scale(1);    opacity: 0.6; }
+  50%      { transform: scale(1.15); opacity: 1; }
 }
 
-@keyframes aria-rise {
-  0%, 100% { transform: translateY(0px); filter: drop-shadow(0 0 28px rgba(255,0,255,0.5)); }
-  50%       { transform: translateY(-8px); filter: drop-shadow(0 0 48px rgba(255,0,255,0.9)) brightness(1.15); }
-}
-
-/* ARIA sparks */
+/* JU sparks */
 .aria-energy {
   position: absolute;
-  top: 20px;
+  top: 10px;
   left: 50%;
   transform: translateX(-50%);
-  width: 160px;
-  height: 160px;
+  width: 260px;
+  height: 260px;
   pointer-events: none;
+  z-index: 3;
 }
 .aria-spark {
   position: absolute;
   border-radius: 50%;
-  animation: aria-spark-anim 1.2s ease-in-out infinite;
+  animation: aria-spark-anim 1.4s ease-in-out infinite;
 }
-.s1 { width: 8px;  height: 8px;  background: #ff00ff; top: 30%; left: 15%; animation-delay: 0s; }
-.s2 { width: 6px;  height: 6px;  background: #00ffff; top: 50%; right: 10%; animation-delay: 0.4s; }
-.s3 { width: 10px; height: 10px; background: #ff88ff; top: 20%; right: 20%; animation-delay: 0.8s; }
-
+.s1 { width: 10px; height: 10px; background: #ff00ff; top: 35%; left: 10%; animation-delay: 0s; }
+.s2 { width:  7px; height:  7px; background: #00ffff; top: 55%; right: 8%;  animation-delay: 0.35s; }
+.s3 { width: 12px; height: 12px; background: #ff88ff; top: 20%; right: 18%; animation-delay: 0.7s; }
+.s4 { width:  6px; height:  6px; background: #ffffff; top: 70%; left: 20%;  animation-delay: 1.0s; }
+.s5 { width:  9px; height:  9px; background: #aa00ff; top: 15%; left: 35%;  animation-delay: 1.25s; }
 @keyframes aria-spark-anim {
-  0%   { transform: scale(0) translateY(0); opacity: 1; }
-  100% { transform: scale(1.5) translateY(-30px); opacity: 0; }
+  0%   { transform: scale(0) translateY(0);    opacity: 1; }
+  100% { transform: scale(2) translateY(-35px); opacity: 0; }
 }
 
 @media (max-width: 768px) {
-  .mascot { width: 100px; height: 100px; }
+  .mascot     { width: 120px; height: 120px; }
+  .ju         { width: 140px; height: 140px; }
   .mascot-stage { padding: 0 10px; }
 }
 </style>
@@ -417,22 +514,30 @@
       <!-- K2 FREE side -->
       <div class="mascot-wrap k2-wrap">
         <div class="mascot-label">K2</div>
-        <img src="assets/images/k2.jpg" class="mascot k2" alt="K2 mascote FREE" />
-        <div class="k2-rings">
-          <div class="k2-ring"></div>
-          <div class="k2-ring"></div>
-          <div class="k2-ring"></div>
+        <div class="mascot-avatar-wrap" id="k2PricingWrap">
+          <img src="assets/images/k2.png" class="mascot k2" id="k2Pricing" alt="K2 mascote FREE" />
+          <div class="k2-glow-ring"></div>
+          <div class="k2-rings">
+            <div class="k2-ring"></div>
+            <div class="k2-ring"></div>
+            <div class="k2-ring"></div>
+          </div>
         </div>
       </div>
 
-      <!-- ARIA PRO side -->
-      <div class="mascot-wrap aria-wrap">
-        <div class="mascot-label aria-label">ARIA</div>
-        <img src="assets/images/aria.jpg" class="mascot aria" alt="ARIA mascote PRO" />
-        <div class="aria-energy">
-          <div class="aria-spark s1"></div>
-          <div class="aria-spark s2"></div>
-          <div class="aria-spark s3"></div>
+      <!-- JU PRO side -->
+      <div class="mascot-wrap ju-wrap">
+        <div class="mascot-label ju-label">JU</div>
+        <div class="mascot-avatar-wrap">
+          <img src="assets/images/ju.png" class="mascot ju" alt="JU mascote PRO" />
+          <div class="ju-aura"></div>
+          <div class="aria-energy">
+            <div class="aria-spark s1"></div>
+            <div class="aria-spark s2"></div>
+            <div class="aria-spark s3"></div>
+            <div class="aria-spark s4"></div>
+            <div class="aria-spark s5"></div>
+          </div>
         </div>
       </div>
 
@@ -517,6 +622,33 @@
   </div>
 </div>
 
+<script>
+// K2 pixel eye burst on click
+function pixelBurst(el) {
+  const rect = el.getBoundingClientRect();
+  const colors = ['#ff00ff','#00ffff','#ff88ff','#ffff00','#ffffff','#aa00ff','#00ff88'];
+  for (let i = 0; i < 22; i++) {
+    const px = document.createElement('div');
+    px.className = 'pixel-burst';
+    const angle = (Math.PI * 2 / 22) * i;
+    const dist = 40 + Math.random() * 60;
+    const tx = `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px)`;
+    px.style.setProperty('--tx', tx);
+    px.style.background = colors[Math.floor(Math.random()*colors.length)];
+    px.style.width = (4 + Math.random()*8) + 'px';
+    px.style.height = px.style.width;
+    // position near eyes (top 35% of avatar)
+    px.style.left = (rect.left + rect.width * 0.3 + Math.random() * rect.width * 0.4) + 'px';
+    px.style.top  = (rect.top  + rect.height * 0.25 + Math.random() * rect.height * 0.15) + 'px';
+    px.style.position = 'fixed';
+    document.body.appendChild(px);
+    setTimeout(() => px.remove(), 750);
+  }
+}
+document.querySelectorAll('#k2Pricing, #heroK2').forEach(el => {
+  el.addEventListener('click', () => pixelBurst(el));
+});
+</script>
 <script src="js/main.js"></script>
 </body>
 </html>
