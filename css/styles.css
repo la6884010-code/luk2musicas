@@ -405,6 +405,3 @@ body::before{
     border-radius:0!important; border:none!important;
   }
 }
-/* ── CORREÇÃO FUNDO BRANCO MASCOTES ── */
-.mascot { mix-blend-mode: multiply; }
-.hero-k2 { mix-blend-mode: multiply; }
