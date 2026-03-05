@@ -335,54 +335,53 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 18px;
-  align-items: end;
+  align-items: start;
 }
 .pricing-col {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  width: 100%;
 }
 
-/* ══ MASCOT STAGE — dentro do card ════════════════ */
+/* ══ MASCOT STAGE — topo do card ══════════════════ */
 .mascot-stage {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
-  margin-bottom: 16px;
-  z-index: 2;
+  padding-top: 8px;
+  margin-bottom: 20px;
 }
 
-/* Halo neon atrás do mascote */
+/* Halo neon centralizado atrás do mascote */
 .mascot-halo {
   position: absolute;
   border-radius: 50%;
   pointer-events: none;
   z-index: 1;
-  bottom: 20px;
+  top: 50%;
   left: 50%;
+  transform: translate(-50%, -50%);
   transition: transform 0.15s ease, opacity 0.15s ease;
 }
 .k2-halo {
-  width: 170px; height: 170px;
-  background: radial-gradient(circle, rgba(0,200,255,0.22) 0%, transparent 70%);
-  transform: translateX(-50%);
+  width: 160px; height: 160px;
+  background: radial-gradient(circle, rgba(0,200,255,0.28) 0%, transparent 70%);
   animation: halo-k2 3.5s ease-in-out infinite;
 }
 .ju-halo {
-  width: 210px; height: 210px;
-  background: radial-gradient(circle, rgba(255,0,200,0.25) 0%, transparent 70%);
-  transform: translateX(-50%);
+  width: 190px; height: 190px;
+  background: radial-gradient(circle, rgba(255,0,200,0.3) 0%, transparent 70%);
   animation: halo-ju 4s ease-in-out infinite;
 }
 @keyframes halo-k2 {
-  0%,100% { opacity: 0.55; transform: translateX(-50%) scale(1); }
-  50%      { opacity: 0.9;  transform: translateX(-50%) scale(1.1); }
+  0%,100% { opacity: 0.55; transform: translate(-50%, -50%) scale(1); }
+  50%      { opacity: 0.9;  transform: translate(-50%, -50%) scale(1.1); }
 }
 @keyframes halo-ju {
-  0%,100% { opacity: 0.55; transform: translateX(-50%) scale(1); }
-  50%      { opacity: 1;    transform: translateX(-50%) scale(1.13); }
+  0%,100% { opacity: 0.55; transform: translate(-50%, -50%) scale(1); }
+  50%      { opacity: 1;    transform: translate(-50%, -50%) scale(1.13); }
 }
 
 /* Parallax wrapper — JS mexe aqui, não no img */
@@ -393,42 +392,42 @@
   transition: transform 60ms linear;
 }
 
-/* Imagens dos mascotes — animação CSS fica aqui */
+/* Imagens dos mascotes */
 .mascot-img {
   display: block;
   object-fit: contain;
   mix-blend-mode: screen;
 }
 .k2-img {
-  height: 200px; width: auto;
+  height: 160px; width: auto;
   filter: drop-shadow(0 0 18px rgba(0,180,255,0.6));
   animation: k2-idle 3.5s ease-in-out infinite;
   cursor: pointer;
   transition: filter 0.2s ease;
 }
 .ju-img {
-  height: 220px; width: auto;
+  height: 175px; width: auto;
   filter: drop-shadow(0 0 22px rgba(255,0,200,0.6));
   animation: ju-idle 4s ease-in-out infinite;
   transition: filter 0.2s ease;
 }
 
-/* Plataforma — na frente do mascote, cria apoio visual */
+/* Plataforma — apoio visual abaixo do mascote */
 .stage-platform {
   position: relative;
-  z-index: 4; /* na frente do mascote */
-  width: 80%;
-  height: 14px;
+  z-index: 4;
+  width: 70%;
+  height: 10px;
   border-radius: 50%;
-  margin-top: -8px;
+  margin-top: -6px;
 }
 .k2-platform {
   background: radial-gradient(ellipse, rgba(0,220,255,0.35) 0%, transparent 70%);
-  box-shadow: 0 0 18px 4px rgba(0,200,255,0.3);
+  box-shadow: 0 0 14px 3px rgba(0,200,255,0.3);
 }
 .ju-platform {
   background: radial-gradient(ellipse, rgba(255,0,200,0.4) 0%, transparent 70%);
-  box-shadow: 0 0 20px 4px rgba(255,0,180,0.35);
+  box-shadow: 0 0 16px 3px rgba(255,0,180,0.35);
 }
 
 /* Card — contém o mascote + conteúdo */
@@ -465,11 +464,11 @@
 }
 .pricing-col:hover .k2-halo {
   opacity: 1 !important;
-  transform: translateX(-50%) scale(1.2) !important;
+  transform: translate(-50%, -50%) scale(1.2) !important;
 }
 .pricing-col:hover .ju-halo {
   opacity: 1 !important;
-  transform: translateX(-50%) scale(1.22) !important;
+  transform: translate(-50%, -50%) scale(1.22) !important;
 }
 @keyframes k2-curious {
   0%   { transform: translateY(0)    rotate(-1.5deg); }
@@ -484,14 +483,14 @@
 
 /* ══ BEAT — classe JS .isBeat ═════════════════════ */
 .pricing-col.isBeat .k2-halo {
-  transform: translateX(-50%) scale(1.22) !important;
+  transform: translate(-50%, -50%) scale(1.22) !important;
   opacity: 1 !important;
 }
 .pricing-col.isBeat .k2-img {
   filter: drop-shadow(0 0 36px rgba(0,220,255,0.95));
 }
 .pricing-col.isBeat .ju-halo {
-  transform: translateX(-50%) scale(1.25) !important;
+  transform: translate(-50%, -50%) scale(1.25) !important;
   opacity: 1 !important;
 }
 .pricing-col.isBeat .ju-img {
