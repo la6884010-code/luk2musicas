@@ -410,7 +410,7 @@ resize();window.addEventListener('resize',resize);
 
 // ── Audio ────────────────────────────────────
 let audioCtx,analyser,sourceNode,audioBuffer;
-const FFT=512; // menor = menos latência
+const FFT=1024; // menor = menos latência
 let freqData=null;
 
 function setupAnalyser(){
@@ -471,7 +471,7 @@ function band(lo,hi){
 const FLUX_HIST=43;
 const fluxHistory=new Float32Array(FLUX_HIST);
 let fluxPtr=0,fluxSmooth=0,fluxPeak=0,prevFFT=null;
-const BEAT_SENS=1.5,COOL_FRAMES=14;
+const BEAT_SENS=1.5,COOL_FRAMES=8;
 let beatFlash=0,beatCool=0,bpm=0;
 const bTimes=[];
 let sBass=0,sMid=0,sHigh=0,sKick=0,sSnare=0,sAudio=0;
@@ -493,9 +493,9 @@ function processAudio(){
   const bN=Math.min(rB/(mBass+1e-6),1),mN=Math.min(rM/(mMid+1e-6),1),hN=Math.min(rH/(mHigh+1e-6),1);
   const kN=Math.min(rK/(mKick+1e-6),1),sN=Math.min(rS/(mSnare+1e-6),1);
   function sm(o,v,u,d){return o+(v-o)*(v>o?u:d);}
-  sBass=sm(sBass,bN,0.40,0.06);sMid=sm(sMid,mN,0.30,0.07);sHigh=sm(sHigh,hN,0.50,0.10);
-  sKick=sm(sKick,kN,0.50,0.07);sSnare=sm(sSnare,sN,0.40,0.08);
-  sAudio=sm(sAudio,Math.min(Math.max(rB+rM*0.5,0),1),0.35,0.08);
+  sBass=sm(sBass,bN,0.40,0.12);sMid=sm(sMid,mN,0.30,0.14);sHigh=sm(sHigh,hN,0.50,0.18);
+  sKick=sm(sKick,kN,0.50,0.14);sSnare=sm(sSnare,sN,0.40,0.15);
+  sAudio=sm(sAudio,Math.min(Math.max(rB+rM*0.5,0),1),0.35,0.15);
 
   // Spectral Flux
   let flux=0;
