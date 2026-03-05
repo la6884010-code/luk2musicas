@@ -298,7 +298,6 @@
   position: relative;
   z-index: 3;
   align-self: flex-end;
-  margin-bottom: 0;
 }
 .hero-k2 {
   width: 190px;
@@ -309,7 +308,6 @@
   animation: k2-idle 4s ease-in-out infinite;
   transform-origin: bottom center;
   cursor: pointer;
-  transition: transform 0.3s ease;
 }
 .hero-k2-bubble {
   background: rgba(0,255,255,0.08);
@@ -330,7 +328,7 @@
 }
 @media (max-width: 900px) { .hero-k2-wrap { display: none; } }
 
-/* ══ PRICING COLS — mascote acima do card ═════════ */
+/* ══ PRICING COLS ═════════════════════════════════ */
 .pricing-cols {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -343,34 +341,15 @@
   align-items: center;
 }
 
-/* Mascote wrapper acima do card */
-.mascot-above {
+/* ══ MASCOT STAGE — estrutura de ancoragem ════════ */
+.mascot-stage {
   position: relative;
   display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  margin-bottom: -10px;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-bottom: -20px; /* overlap no card */
   z-index: 2;
-}
-.mascot-img {
-  position: relative;
-  z-index: 2;
-  mix-blend-mode: screen;
-  object-fit: contain;
-  transition: transform 0.4s cubic-bezier(.23,1.4,.32,1);
-  cursor: pointer;
-}
-.k2-above  { height: 200px; }
-.k2-img    {
-  height: 190px; width: auto;
-  filter: drop-shadow(0 0 18px rgba(0,180,255,0.55));
-  animation: k2-idle 3.5s ease-in-out infinite;
-}
-.ju-above  { height: 220px; }
-.ju-img    {
-  height: 210px; width: auto;
-  filter: drop-shadow(0 0 22px rgba(255,0,200,0.55));
-  animation: ju-idle 4s ease-in-out infinite;
 }
 
 /* Halo neon atrás do mascote */
@@ -379,56 +358,162 @@
   border-radius: 50%;
   pointer-events: none;
   z-index: 1;
+  bottom: 20px;
+  left: 50%;
+  transition: transform 0.15s ease, opacity 0.15s ease;
 }
 .k2-halo {
-  width: 160px; height: 160px;
-  background: radial-gradient(circle, rgba(0,200,255,0.18) 0%, transparent 70%);
-  animation: halo-pulse-k2 3.5s ease-in-out infinite;
-  bottom: 10px; left: 50%; transform: translateX(-50%);
+  width: 170px; height: 170px;
+  background: radial-gradient(circle, rgba(0,200,255,0.22) 0%, transparent 70%);
+  transform: translateX(-50%);
+  animation: halo-k2 3.5s ease-in-out infinite;
 }
 .ju-halo {
-  width: 200px; height: 200px;
-  background: radial-gradient(circle, rgba(255,0,200,0.2) 0%, transparent 70%);
-  animation: halo-pulse-ju 4s ease-in-out infinite;
-  bottom: 10px; left: 50%; transform: translateX(-50%);
+  width: 210px; height: 210px;
+  background: radial-gradient(circle, rgba(255,0,200,0.25) 0%, transparent 70%);
+  transform: translateX(-50%);
+  animation: halo-ju 4s ease-in-out infinite;
+}
+@keyframes halo-k2 {
+  0%,100% { opacity: 0.55; transform: translateX(-50%) scale(1); }
+  50%      { opacity: 0.9;  transform: translateX(-50%) scale(1.1); }
+}
+@keyframes halo-ju {
+  0%,100% { opacity: 0.55; transform: translateX(-50%) scale(1); }
+  50%      { opacity: 1;    transform: translateX(-50%) scale(1.13); }
 }
 
-/* Idle animations — sutis e premium */
+/* Parallax wrapper — JS mexe aqui, não no img */
+.mascot-parallax {
+  position: relative;
+  z-index: 3;
+  will-change: transform;
+  transition: transform 60ms linear;
+}
+
+/* Imagens dos mascotes — animação CSS fica aqui */
+.mascot-img {
+  display: block;
+  object-fit: contain;
+  mix-blend-mode: screen;
+}
+.k2-img {
+  height: 200px; width: auto;
+  filter: drop-shadow(0 0 18px rgba(0,180,255,0.6));
+  animation: k2-idle 3.5s ease-in-out infinite;
+  cursor: pointer;
+  transition: filter 0.2s ease;
+}
+.ju-img {
+  height: 220px; width: auto;
+  filter: drop-shadow(0 0 22px rgba(255,0,200,0.6));
+  animation: ju-idle 4s ease-in-out infinite;
+  transition: filter 0.2s ease;
+}
+
+/* Plataforma — na frente do mascote, cria apoio visual */
+.stage-platform {
+  position: relative;
+  z-index: 4; /* na frente do mascote */
+  width: 80%;
+  height: 14px;
+  border-radius: 50%;
+  margin-top: -8px;
+}
+.k2-platform {
+  background: radial-gradient(ellipse, rgba(0,220,255,0.35) 0%, transparent 70%);
+  box-shadow: 0 0 18px 4px rgba(0,200,255,0.3);
+}
+.ju-platform {
+  background: radial-gradient(ellipse, rgba(255,0,200,0.4) 0%, transparent 70%);
+  box-shadow: 0 0 20px 4px rgba(255,0,180,0.35);
+}
+
+/* Card — z-index abaixo do mascote-stage */
+.price-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+}
+/* Sombra de contato no topo do card */
+.price-card::before {
+  content: "";
+  position: absolute;
+  left: 50%; top: -16px;
+  transform: translateX(-50%);
+  width: 200px; height: 36px;
+  background: radial-gradient(ellipse, rgba(0,220,255,0.2), transparent 70%);
+  filter: blur(8px);
+  opacity: 0.7;
+  pointer-events: none;
+  z-index: 0;
+}
+#col-pro .price-card::before {
+  background: radial-gradient(ellipse, rgba(255,0,200,0.22), transparent 70%);
+}
+
+/* ══ IDLE ANIMATIONS — orgânicas, não robóticas ═══ */
 @keyframes k2-idle {
-  0%,100% { transform: translateY(0px) rotate(-2deg); }
-  50%      { transform: translateY(-10px) rotate(2deg); }
+  0%   { transform: translateY(0px)   rotate(-1.5deg); }
+  30%  { transform: translateY(-7px)  rotate(1deg); }
+  60%  { transform: translateY(-4px)  rotate(-0.5deg); }
+  100% { transform: translateY(0px)   rotate(-1.5deg); }
 }
 @keyframes ju-idle {
-  0%,100% { transform: translateY(0px) rotate(1deg); }
-  50%      { transform: translateY(-8px) rotate(-1deg); }
-}
-@keyframes halo-pulse-k2 {
-  0%,100% { opacity: 0.5; transform: translateX(-50%) scale(1); }
-  50%      { opacity: 1;   transform: translateX(-50%) scale(1.12); }
-}
-@keyframes halo-pulse-ju {
-  0%,100% { opacity: 0.5; transform: translateX(-50%) scale(1); }
-  50%      { opacity: 1;   transform: translateX(-50%) scale(1.15); }
+  0%   { transform: translateY(0px)  rotate(1deg); }
+  35%  { transform: translateY(-9px) rotate(-1.5deg); }
+  65%  { transform: translateY(-5px) rotate(0.5deg); }
+  100% { transform: translateY(0px)  rotate(1deg); }
 }
 
-/* Hover do card → mascote reage */
+/* ══ HOVER DO CARD — reações vivas ════════════════ */
 .pricing-col:hover .k2-img {
-  animation: k2-curious 0.6s ease forwards, k2-idle 3.5s ease-in-out 0.6s infinite;
-  filter: drop-shadow(0 0 28px rgba(0,220,255,0.8));
+  animation: k2-curious 0.55s cubic-bezier(.23,1.4,.32,1) forwards,
+             k2-idle 3.5s ease-in-out 0.55s infinite;
+  filter: drop-shadow(0 0 30px rgba(0,220,255,0.9));
 }
 .pricing-col:hover .ju-img {
-  animation: ju-power 0.6s ease forwards, ju-idle 4s ease-in-out 0.6s infinite;
-  filter: drop-shadow(0 0 34px rgba(255,0,220,0.9));
+  animation: ju-power 0.55s cubic-bezier(.23,1.4,.32,1) forwards,
+             ju-idle 4s ease-in-out 0.55s infinite;
+  filter: drop-shadow(0 0 38px rgba(255,0,220,1));
+}
+.pricing-col:hover .k2-halo {
+  opacity: 1 !important;
+  transform: translateX(-50%) scale(1.2) !important;
+}
+.pricing-col:hover .ju-halo {
+  opacity: 1 !important;
+  transform: translateX(-50%) scale(1.22) !important;
 }
 @keyframes k2-curious {
-  0%   { transform: translateY(0) rotate(-2deg); }
-  40%  { transform: translateY(-16px) rotate(8deg) scale(1.06); }
-  100% { transform: translateY(-10px) rotate(2deg); }
+  0%   { transform: translateY(0)    rotate(-1.5deg); }
+  45%  { transform: translateY(-18px) rotate(10deg) scale(1.07); }
+  100% { transform: translateY(-7px)  rotate(1deg); }
 }
 @keyframes ju-power {
-  0%   { transform: translateY(0) rotate(1deg); }
-  40%  { transform: translateY(-14px) rotate(-4deg) scale(1.08); }
-  100% { transform: translateY(-8px) rotate(-1deg); }
+  0%   { transform: translateY(0)    rotate(1deg); }
+  40%  { transform: translateY(-16px) rotate(-5deg) scale(1.1); }
+  100% { transform: translateY(-9px)  rotate(-1.5deg); }
+}
+
+/* ══ BEAT — classe JS .isBeat ═════════════════════ */
+.pricing-col.isBeat .k2-halo {
+  transform: translateX(-50%) scale(1.22) !important;
+  opacity: 1 !important;
+}
+.pricing-col.isBeat .k2-img {
+  filter: drop-shadow(0 0 36px rgba(0,220,255,0.95));
+}
+.pricing-col.isBeat .ju-halo {
+  transform: translateX(-50%) scale(1.25) !important;
+  opacity: 1 !important;
+}
+.pricing-col.isBeat .ju-img {
+  filter: drop-shadow(0 0 44px rgba(255,0,220,1));
+}
+.pricing-col.isBeat .stage-platform {
+  opacity: 1.0;
+  transform: scaleX(1.1);
 }
 
 /* Pixel burst K2 */
@@ -444,53 +529,11 @@
   100% { opacity: 0; transform: var(--tx) scale(0.2); }
 }
 
-/* ── CORREÇÕES ESPECIALISTA ─────────────────── */
-
-/* Âncora visual — mascote invade topo do card */
-.mascot-above { margin-bottom: -24px; }
-.price-card   { position: relative; z-index: 1; }
-.mascot-above { z-index: 2; }
-
-/* Sombra de contato — cola visual mascote/card */
-.price-card::before {
-  content: "";
-  position: absolute;
-  left: 50%; top: -18px;
-  transform: translateX(-50%);
-  width: 220px; height: 40px;
-  background: radial-gradient(circle, rgba(0,255,255,.18), transparent 70%);
-  filter: blur(10px);
-  opacity: .65;
-  pointer-events: none;
-}
-#col-pro .price-card::before {
-  background: radial-gradient(circle, rgba(255,0,200,.18), transparent 70%);
-}
-
-/* Beat orgânico */
-.pricing-col.isBeat .mascot-halo {
-  transform: translateX(-50%) scale(1.18);
-  opacity: 1;
-}
-.pricing-col.isBeat .mascot-img {
-  filter: drop-shadow(0 0 34px rgba(0,220,255,.85));
-}
-#col-pro.isBeat .ju-img {
-  filter: drop-shadow(0 0 42px rgba(255,0,220,.9));
-}
-
-/* Wrapper parallax — não interfere na animação do img */
-.mascot-parallax {
-  will-change: transform;
-  transition: transform 60ms linear;
-}
-
+/* ══ MOBILE ═══════════════════════════════════════ */
 @media (max-width: 768px) {
-  .pricing-cols { grid-template-columns: 1fr; gap: 32px; }
-  .k2-img  { height: 130px; }
-  .ju-img  { height: 150px; }
-  .k2-above { height: 140px; }
-  .ju-above { height: 160px; }
+  .pricing-cols { grid-template-columns: 1fr; gap: 36px; }
+  .k2-img  { height: 140px; }
+  .ju-img  { height: 155px; }
 }
 </style>
 
@@ -502,16 +545,20 @@
       Comece de graça. Faça upgrade quando estiver pronto para exportar sem limites.
     </p>
 
-    <!-- Nova estrutura: mascote + card juntos por coluna -->
+    <!-- Pricing cols com mascote ancorado na plataforma -->
     <div class="pricing-cols">
 
       <!-- Coluna FREE -->
       <div class="pricing-col" id="col-free">
-        <div class="mascot-above k2-above" id="k2PricingWrap">
+        <div class="mascot-stage">
+          <!-- Halo atrás -->
           <div class="mascot-halo k2-halo"></div>
+          <!-- Mascote com wrapper parallax -->
           <div class="mascot-parallax" id="k2Parallax">
             <img src="assets/images/k2.png" class="mascot-img k2-img" id="k2Pricing" alt="K2" />
           </div>
+          <!-- Plataforma na frente (efeito de apoio) -->
+          <div class="stage-platform k2-platform"></div>
         </div>
         <div class="price-card" id="card-free">
           <div class="price-top">
@@ -531,11 +578,15 @@
 
       <!-- Coluna PRO -->
       <div class="pricing-col" id="col-pro">
-        <div class="mascot-above ju-above" id="juPricingWrap">
+        <div class="mascot-stage">
+          <!-- Halo atrás -->
           <div class="mascot-halo ju-halo"></div>
+          <!-- Mascote com wrapper parallax -->
           <div class="mascot-parallax" id="juParallax">
             <img src="assets/images/ju.png" class="mascot-img ju-img" id="juPricing" alt="JU" />
           </div>
+          <!-- Plataforma na frente -->
+          <div class="stage-platform ju-platform"></div>
         </div>
         <div class="price-card pro" id="card-pro">
           <div class="price-top">
@@ -599,7 +650,7 @@
 </div>
 
 <script>
-// ── K2 pixel burst on click ──────────────────────
+// ── K2 pixel burst no clique ──────────────────────
 function pixelBurst(el) {
   const rect = el.getBoundingClientRect();
   const colors = ['#ff00ff','#00ffff','#ff88ff','#ffff00','#ffffff','#aa00ff','#00ff88'];
@@ -622,11 +673,11 @@ document.querySelectorAll('#k2Pricing, #heroK2').forEach(el => {
   el.addEventListener('click', () => pixelBurst(el));
 });
 
-// ── Parallax correto — mexe no wrapper, não no img ──
+// ── Parallax — mexe no WRAPPER, animação fica no img ──
 document.addEventListener('mousemove', (e) => {
   const cx = window.innerWidth / 2;
   const cy = window.innerHeight / 2;
-  const dx = (e.clientX - cx) / cx;
+  const dx = (e.clientX - cx) / cx; // -1..1
   const dy = (e.clientY - cy) / cy;
 
   const k2p = document.getElementById('k2Parallax');
@@ -638,14 +689,14 @@ document.addEventListener('mousemove', (e) => {
   if (hk2) hk2.style.transform = `translate(${dx*4}px, ${dy*3}px)`;
 });
 
-// ── Beat orgânico — vida musical sem gif pulsante ──
-(function beatLoop(){
+// ── Beat orgânico — vida musical, intervalo irregular ──
+(function beatLoop() {
   document.querySelectorAll('.pricing-col').forEach(col => {
     const isPro = col.id === 'col-pro';
     const chance = isPro ? 0.55 : 0.35;
     if (Math.random() < chance) {
       col.classList.add('isBeat');
-      setTimeout(() => col.classList.remove('isBeat'), 140);
+      setTimeout(() => col.classList.remove('isBeat'), 130 + Math.random() * 40);
     }
   });
   setTimeout(beatLoop, 180 + Math.random() * 320);
