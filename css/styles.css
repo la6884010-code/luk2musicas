@@ -436,3 +436,18 @@ body::before{
   65%  { transform: translateY(-3px) rotate(-0.5deg); }
   100% { transform: translateY(0px)  rotate(-1deg); }
 }
+/* ══ HERO K2 — ao lado do vídeo ══ */
+.hero {
+  grid-template-columns: 1fr;
+  position: relative;
+}
+.hero-right {
+  position: relative;
+}
+.hero-k2-wrap {
+  position: absolute;
+  right: -80px;
+  bottom: 40px;
+  z-index: 5;
+  align-self: unset;
+}
