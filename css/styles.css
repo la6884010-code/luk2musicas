@@ -451,3 +451,21 @@ body::before{
   z-index: 5;
   align-self: unset;
 }
+/* ══ HERO K2 — posicionamento ao lado do card ════ */
+.hero-k2-wrap {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+/* ══ HERO K2 — ajuste posição ════════════════════ */
+.hero-k2-wrap {
+  transform: translateY(40px);
+  margin-right: 40px;
+}
+.hero-k2 {
+  transform: scale(1.05);
+}
+.hero-k2-bubble {
+  margin-bottom: 6px;
+}
