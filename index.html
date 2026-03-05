@@ -282,6 +282,127 @@
 }
 </style>
 
+<style>
+/* ── MASCOTES ───────────────────────── */
+.mascot-stage {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  max-width: 900px;
+  margin: 0 auto 0;
+  padding: 0 20px;
+  pointer-events: none;
+  position: relative;
+  z-index: 2;
+}
+
+.mascot-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.mascot-label {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  color: rgba(0,255,255,0.6);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+.aria-label { color: rgba(255,0,255,0.7); }
+
+.mascot {
+  width: 160px;
+  height: 160px;
+  object-fit: contain;
+  border-radius: 16px;
+  filter: drop-shadow(0 0 18px rgba(0,255,255,0.4));
+}
+
+/* K2 animations */
+.k2 {
+  animation: k2-float 3s ease-in-out infinite, k2-beat 0.8s ease-in-out infinite;
+  filter: drop-shadow(0 0 20px rgba(100,150,255,0.5));
+  transform-origin: bottom center;
+}
+
+@keyframes k2-float {
+  0%, 100% { transform: translateY(0px) rotate(-3deg); }
+  50%       { transform: translateY(-10px) rotate(3deg); }
+}
+
+@keyframes k2-beat {
+  0%, 100% { filter: drop-shadow(0 0 20px rgba(100,150,255,0.4)); }
+  50%       { filter: drop-shadow(0 0 36px rgba(255,100,255,0.8)) brightness(1.2); }
+}
+
+/* K2 rings — pulso */
+.k2-rings {
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.k2-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(0,255,255,0.3);
+  transform: translateX(-50%) translateY(-50%);
+  animation: k2-ring-pulse 1.6s ease-out infinite;
+}
+.k2-ring:nth-child(1) { width: 60px;  height: 20px; animation-delay: 0s; }
+.k2-ring:nth-child(2) { width: 100px; height: 30px; animation-delay: 0.3s; }
+.k2-ring:nth-child(3) { width: 140px; height: 40px; animation-delay: 0.6s; }
+
+@keyframes k2-ring-pulse {
+  0%   { opacity: 0.6; transform: translateX(-50%) translateY(-50%) scale(0.8); }
+  100% { opacity: 0;   transform: translateX(-50%) translateY(-50%) scale(1.4); }
+}
+
+/* ARIA animations */
+.aria {
+  animation: aria-rise 4s ease-in-out infinite;
+  filter: drop-shadow(0 0 28px rgba(255,0,255,0.5));
+  transform-origin: bottom center;
+}
+
+@keyframes aria-rise {
+  0%, 100% { transform: translateY(0px); filter: drop-shadow(0 0 28px rgba(255,0,255,0.5)); }
+  50%       { transform: translateY(-8px); filter: drop-shadow(0 0 48px rgba(255,0,255,0.9)) brightness(1.15); }
+}
+
+/* ARIA sparks */
+.aria-energy {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 160px;
+  height: 160px;
+  pointer-events: none;
+}
+.aria-spark {
+  position: absolute;
+  border-radius: 50%;
+  animation: aria-spark-anim 1.2s ease-in-out infinite;
+}
+.s1 { width: 8px;  height: 8px;  background: #ff00ff; top: 30%; left: 15%; animation-delay: 0s; }
+.s2 { width: 6px;  height: 6px;  background: #00ffff; top: 50%; right: 10%; animation-delay: 0.4s; }
+.s3 { width: 10px; height: 10px; background: #ff88ff; top: 20%; right: 20%; animation-delay: 0.8s; }
+
+@keyframes aria-spark-anim {
+  0%   { transform: scale(0) translateY(0); opacity: 1; }
+  100% { transform: scale(1.5) translateY(-30px); opacity: 0; }
+}
+
+@media (max-width: 768px) {
+  .mascot { width: 100px; height: 100px; }
+  .mascot-stage { padding: 0 10px; }
+}
+</style>
+
 <!-- Pricing Section -->
 <section class="pricing" id="pricing">
   <div class="pricing-container">
@@ -289,6 +410,33 @@
     <p class="pricing-sub">
       Comece de graça. Faça upgrade quando estiver pronto para exportar sem limites.
     </p>
+
+    <!-- Mascotes -->
+    <div class="mascot-stage">
+
+      <!-- K2 FREE side -->
+      <div class="mascot-wrap k2-wrap">
+        <div class="mascot-label">K2</div>
+        <img src="assets/images/k2.jpg" class="mascot k2" alt="K2 mascote FREE" />
+        <div class="k2-rings">
+          <div class="k2-ring"></div>
+          <div class="k2-ring"></div>
+          <div class="k2-ring"></div>
+        </div>
+      </div>
+
+      <!-- ARIA PRO side -->
+      <div class="mascot-wrap aria-wrap">
+        <div class="mascot-label aria-label">ARIA</div>
+        <img src="assets/images/aria.jpg" class="mascot aria" alt="ARIA mascote PRO" />
+        <div class="aria-energy">
+          <div class="aria-spark s1"></div>
+          <div class="aria-spark s2"></div>
+          <div class="aria-spark s3"></div>
+        </div>
+      </div>
+
+    </div>
 
     <div class="pricing-grid">
 
