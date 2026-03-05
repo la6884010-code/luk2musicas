@@ -50,6 +50,8 @@ overlay.addEventListener('click', closeModal);
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') closeModal();
 });
+
+console.log("✅ MASCOTS JS LOADED");
 /* ═══════════════════════════════════════
    BEAT LOOP ORGÂNICO — energia musical
 ═══════════════════════════════════════ */
