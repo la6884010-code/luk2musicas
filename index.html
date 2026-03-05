@@ -444,6 +444,47 @@
   100% { opacity: 0; transform: var(--tx) scale(0.2); }
 }
 
+/* ── CORREÇÕES ESPECIALISTA ─────────────────── */
+
+/* Âncora visual — mascote invade topo do card */
+.mascot-above { margin-bottom: -24px; }
+.price-card   { position: relative; z-index: 1; }
+.mascot-above { z-index: 2; }
+
+/* Sombra de contato — cola visual mascote/card */
+.price-card::before {
+  content: "";
+  position: absolute;
+  left: 50%; top: -18px;
+  transform: translateX(-50%);
+  width: 220px; height: 40px;
+  background: radial-gradient(circle, rgba(0,255,255,.18), transparent 70%);
+  filter: blur(10px);
+  opacity: .65;
+  pointer-events: none;
+}
+#col-pro .price-card::before {
+  background: radial-gradient(circle, rgba(255,0,200,.18), transparent 70%);
+}
+
+/* Beat orgânico */
+.pricing-col.isBeat .mascot-halo {
+  transform: translateX(-50%) scale(1.18);
+  opacity: 1;
+}
+.pricing-col.isBeat .mascot-img {
+  filter: drop-shadow(0 0 34px rgba(0,220,255,.85));
+}
+#col-pro.isBeat .ju-img {
+  filter: drop-shadow(0 0 42px rgba(255,0,220,.9));
+}
+
+/* Wrapper parallax — não interfere na animação do img */
+.mascot-parallax {
+  will-change: transform;
+  transition: transform 60ms linear;
+}
+
 @media (max-width: 768px) {
   .pricing-cols { grid-template-columns: 1fr; gap: 32px; }
   .k2-img  { height: 130px; }
@@ -468,7 +509,9 @@
       <div class="pricing-col" id="col-free">
         <div class="mascot-above k2-above" id="k2PricingWrap">
           <div class="mascot-halo k2-halo"></div>
-          <img src="assets/images/k2.png" class="mascot-img k2-img" id="k2Pricing" alt="K2" />
+          <div class="mascot-parallax" id="k2Parallax">
+            <img src="assets/images/k2.png" class="mascot-img k2-img" id="k2Pricing" alt="K2" />
+          </div>
         </div>
         <div class="price-card" id="card-free">
           <div class="price-top">
@@ -490,7 +533,9 @@
       <div class="pricing-col" id="col-pro">
         <div class="mascot-above ju-above" id="juPricingWrap">
           <div class="mascot-halo ju-halo"></div>
-          <img src="assets/images/ju.png" class="mascot-img ju-img" id="juPricing" alt="JU" />
+          <div class="mascot-parallax" id="juParallax">
+            <img src="assets/images/ju.png" class="mascot-img ju-img" id="juPricing" alt="JU" />
+          </div>
         </div>
         <div class="price-card pro" id="card-pro">
           <div class="price-top">
@@ -577,21 +622,34 @@ document.querySelectorAll('#k2Pricing, #heroK2').forEach(el => {
   el.addEventListener('click', () => pixelBurst(el));
 });
 
-// ── Parallax suave — mascote acompanha mouse ─────
+// ── Parallax correto — mexe no wrapper, não no img ──
 document.addEventListener('mousemove', (e) => {
   const cx = window.innerWidth / 2;
   const cy = window.innerHeight / 2;
   const dx = (e.clientX - cx) / cx;
   const dy = (e.clientY - cy) / cy;
 
-  const k2 = document.getElementById('k2Pricing');
-  const ju = document.getElementById('juPricing');
+  const k2p = document.getElementById('k2Parallax');
+  const jup = document.getElementById('juParallax');
   const hk2 = document.getElementById('heroK2');
 
-  if (k2) k2.style.transform = `translateX(${dx*6}px) translateY(${dy*4}px)`;
-  if (ju) ju.style.transform = `translateX(${dx*-5}px) translateY(${dy*3}px)`;
-  if (hk2) hk2.style.transform = `translateX(${dx*5}px) translateY(${dy*4}px)`;
+  if (k2p) k2p.style.transform = `translate(${dx*6}px, ${dy*4}px) rotate(${dx*1.2}deg)`;
+  if (jup) jup.style.transform = `translate(${dx*-5}px, ${dy*3}px) rotate(${dx*-1.0}deg)`;
+  if (hk2) hk2.style.transform = `translate(${dx*4}px, ${dy*3}px)`;
 });
+
+// ── Beat orgânico — vida musical sem gif pulsante ──
+(function beatLoop(){
+  document.querySelectorAll('.pricing-col').forEach(col => {
+    const isPro = col.id === 'col-pro';
+    const chance = isPro ? 0.55 : 0.35;
+    if (Math.random() < chance) {
+      col.classList.add('isBeat');
+      setTimeout(() => col.classList.remove('isBeat'), 140);
+    }
+  });
+  setTimeout(beatLoop, 180 + Math.random() * 320);
+})();
 </script>
 <script src="js/main.js"></script>
 </body>
