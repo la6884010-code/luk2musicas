@@ -469,3 +469,50 @@ body::before{
 .hero-k2-bubble {
   margin-bottom: 6px;
 }
+/* ═══════════════════════════════════════
+   MASCOTES VIVOS — breath + blink + beat
+   (K2 e JU)
+═══════════════════════════════════════ */
+
+@keyframes mascot-breath {
+  0%   { transform: translateY(0px) scale(1); }
+  40%  { transform: translateY(-6px) scale(1.02); }
+  70%  { transform: translateY(-3px) scale(1.01); }
+  100% { transform: translateY(0px) scale(1); }
+}
+
+@keyframes mascot-blink {
+  0%, 94%, 100% { filter: brightness(1); }
+  95%           { filter: brightness(1.6); }
+  97%           { filter: brightness(0.7); }
+  98%           { filter: brightness(1); }
+}
+
+/* aplica em todos os mascotes PNG */
+.mascot-img {
+  animation:
+    mascot-breath 4s ease-in-out infinite,
+    mascot-blink 7s ease-in-out infinite;
+}
+
+/* diferenças pra não parecer loop robótico */
+.k2-img { animation-duration: 3.8s, 6s; }
+.ju-img { animation-duration: 4.4s, 8s; }
+
+/* BEAT — energia musical no pricing */
+.pricing-col.isBeat .mascot-img {
+  transform: translateY(-2px) scale(1.05);
+  filter: drop-shadow(0 0 28px rgba(0,255,255,0.85)) brightness(1.15);
+  transition: transform 0.1s ease, filter 0.1s ease;
+}
+#col-pro.isBeat .mascot-img {
+  filter: drop-shadow(0 0 34px rgba(255,0,200,0.9)) brightness(1.15);
+}
+
+/* ═══════════════════════════════════════
+   HERO K2 — permitir olhar pro preview
+═══════════════════════════════════════ */
+#heroK2 {
+  transition: transform 0.18s ease;
+  transform-origin: bottom center;
+}
