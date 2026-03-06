@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<title>LUK2 — Motion State</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:'Space Mono',monospace;}
+  canvas{display:block;width:100%;height:100%;position:absolute;top:0;left:0;}
+
+  #startOverlay{
+    position:absolute;inset:0;z-index:50;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:radial-gradient(ellipse at 40% 40%,rgba(0,200,255,.13),transparent 60%),
+               radial-gradient(ellipse at 70% 65%,rgba(140,60,255,.09),transparent 55%),
+               rgba(4,5,12,.97);
+    backdrop-filter:blur(4px);transition:opacity .6s ease;
+  }
+  #startOverlay.hidden{opacity:0;pointer-events:none;}
+  .start-brand{font-family:'Syne',sans-serif;font-size:64px;font-weight:800;letter-spacing:4px;
+    background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(0,200,255,.75));
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px;}
+  .start-sub{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:4px;color:rgba(0,200,255,.45);text-transform:uppercase;margin-bottom:10px;}
+  .start-tagline{color:rgba(255,255,255,.30);font-size:11px;letter-spacing:3px;text-transform:uppercase;margin-bottom:52px;}
+  .start-btn{
+    position:relative;padding:18px 52px;border-radius:100px;
+    border:1px solid rgba(0,200,255,.4);
+    background:linear-gradient(135deg,rgba(0,200,255,.18),rgba(80,0,255,.10));
+    color:#fff;font-family:'Syne',sans-serif;font-size:16px;font-weight:700;letter-spacing:2px;
+    cursor:pointer;transition:all .25s ease;
+    box-shadow:0 0 60px rgba(0,200,255,.15),inset 0 1px 0 rgba(255,255,255,.07);}
+  .start-btn:hover{transform:scale(1.06);box-shadow:0 0 80px rgba(0,200,255,.32);}
+  .start-note{margin-top:28px;color:rgba(255,255,255,.20);font-size:11px;letter-spacing:1px;text-align:center;}
+  .file-drop-area{
+    margin-top:16px;padding:12px 28px;border:1px dashed rgba(255,255,255,.30);border-radius:12px;
+    color:rgba(255,255,255,.80);font-size:11px;letter-spacing:1px;cursor:pointer;transition:all .2s ease;text-align:center;
+    background:rgba(255,255,255,.04);}
+  .file-drop-area:hover{border-color:rgba(0,200,255,.5);background:rgba(0,200,255,.04);}
+  #fileInput{display:none;}
+
+  #hud{
+    position:absolute;top:0;left:0;right:0;z-index:20;padding:18px 24px;
+    display:flex;align-items:center;justify-content:space-between;pointer-events:none;
+    background:linear-gradient(to bottom,rgba(0,0,0,.5),transparent);}
+  .hud-brand{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;letter-spacing:3px;color:rgba(255,255,255,.88);}
+  .hud-tag{font-size:9px;color:rgba(0,200,255,.4);letter-spacing:3px;margin-top:3px;text-transform:uppercase;}
+  .bpm-display{font-family:'Space Mono',monospace;font-size:28px;font-weight:700;color:rgba(255,255,255,.75);line-height:1;text-align:right;}
+  .bpm-label{font-size:9px;color:rgba(255,255,255,.25);letter-spacing:2px;margin-top:2px;text-align:right;}
+
+  /* Beat flash: magenta border */
+  #beatFlash{position:absolute;inset:0;z-index:15;pointer-events:none;
+    border:3px solid rgba(255,0,180,0);transition:border-color .03s ease,opacity .08s ease;opacity:0;}
+  #beatFlash.active{border-color:rgba(255,0,180,.80);opacity:1;}
+
+  #controls{
+    position:absolute;bottom:0;left:0;right:0;z-index:20;padding:20px 24px 24px;
+    background:linear-gradient(to top,rgba(0,0,0,.72),transparent);
+    display:flex;align-items:flex-end;justify-content:space-between;gap:20px;}
+  .ctrl-group{display:flex;flex-direction:column;gap:8px;}
+  .ctrl-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.25);margin-bottom:2px;}
+  .ctrl-row{display:flex;gap:8px;align-items:center;}
+  .palette-swatch{width:32px;height:32px;border-radius:50%;cursor:pointer;
+    border:2px solid rgba(255,255,255,.0);transition:all .2s ease;}
+  .palette-swatch:hover{transform:scale(1.2);border-color:rgba(255,255,255,.32);}
+  .palette-swatch.active{border-color:#fff;transform:scale(1.15);box-shadow:0 0 16px rgba(255,255,255,.25);}
+  .bars{display:flex;align-items:flex-end;gap:3px;height:36px;}
+  .bar{width:5px;border-radius:2px;background:rgba(0,200,255,.50);min-height:3px;transition:height .04s ease;}
+  .track-info{display:flex;align-items:center;gap:10px;}
+  .track-dot{width:8px;height:8px;border-radius:50%;background:rgba(0,200,255,.75);
+    box-shadow:0 0 10px rgba(0,200,255,.55);animation:pulse-dot 1.2s ease-in-out infinite;}
+  @keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.75);}}
+  .track-dot.paused{animation:none;background:rgba(255,255,255,.22);}
+  .track-name{font-size:11px;color:rgba(255,255,255,.45);letter-spacing:1px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .watermark{position:absolute;bottom:80px;right:24px;z-index:18;pointer-events:none;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,.08);}
+
+  /* Motion state debug overlay (toggle with D) */
+  #debug{
+    position:absolute;top:70px;left:24px;z-index:30;pointer-events:none;
+    font-family:'Space Mono',monospace;font-size:10px;line-height:1.7;
+    color:rgba(255,255,255,.35);letter-spacing:.5px;display:none;}
+  #debug.show{display:block;}
+  .dbv{color:rgba(0,200,255,.7);}
+
+  #idleMsg{
+    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    z-index:25;pointer-events:auto;
+    display:flex;align-items:center;gap:10px;
+    background:rgba(4,6,18,.72);border:1px solid rgba(255,255,255,.12);
+    border-radius:100px;padding:12px 28px;backdrop-filter:blur(12px);
+    opacity:1;transition:opacity .8s ease;
+    font-family:'Space Mono',monospace;font-size:13px;letter-spacing:2px;
+    color:rgba(255,255,255,.78);white-space:nowrap;cursor:pointer;
+    animation:idle-pulse 2.4s ease-in-out infinite;}
+  #idleMsg:hover{background:rgba(0,200,255,.10);border-color:rgba(0,200,255,.42);}
+  #idleMsg.hidden{opacity:0;pointer-events:none;}
+  @keyframes idle-pulse{
+    0%,100%{box-shadow:0 0 0 0 rgba(0,200,255,.0);border-color:rgba(255,255,255,.12);}
+    50%{box-shadow:0 0 24px 4px rgba(0,200,255,.18);border-color:rgba(0,200,255,.40);}}
+
+  #loadingMsg{position:absolute;inset:0;z-index:60;display:none;align-items:center;justify-content:center;background:rgba(4,5,12,.88);flex-direction:column;gap:16px;}
+  #loadingMsg.show{display:flex;}
+  .loading-spinner{width:40px;height:40px;border:2px solid rgba(0,200,255,.08);border-top-color:rgba(0,200,255,.70);border-radius:50%;animation:spin .8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .loading-text{color:rgba(255,255,255,.30);font-size:11px;letter-spacing:2px;}
+
+  @media(max-width:768px){
+    #hud{padding:12px 16px;}
+    .hud-brand{font-size:16px;}.bpm-display{font-size:20px;}
+    #controls{flex-direction:column;align-items:stretch;gap:12px;padding:14px 16px 20px;background:linear-gradient(to top,rgba(0,0,0,.92) 60%,transparent);}
+    .track-name{font-size:10px;max-width:140px;}.bars{height:24px;}.bar{width:4px;}
+    .palette-swatch{width:38px;height:38px;}.ctrl-label{font-size:8px;margin-bottom:0;}
+    .start-brand{font-size:44px;}.start-tagline{font-size:10px;margin-bottom:36px;}
+    .start-btn{padding:16px 36px;font-size:14px;}.file-drop-area{font-size:10px;padding:10px 20px;}
+    #debug{display:none!important;}
+  }
+</style>
+</head>
+<body>
+<canvas id="glCanvas"></canvas>
+<div id="beatFlash"></div>
+
+<div id="hud">
+  <div>
+    <div class="hud-brand">LUK2</div>
+    <div class="hud-tag">Motion State</div>
+  </div>
+  <div>
+    <div class="bpm-display" id="bpmDisplay">---</div>
+    <div class="bpm-label">BPM</div>
+  </div>
+</div>
+
+<div id="debug">
+  breath: <span class="dbv" id="dBreath">0.000</span><br>
+  pulse:  <span class="dbv" id="dPulse">0.000</span><br>
+  warp:   <span class="dbv" id="dWarp">0.000</span><br>
+  flow:   <span class="dbv" id="dFlow">0.000</span><br>
+  flash:  <span class="dbv" id="dFlash">0.000</span><br>
+  kick ●  <span class="dbv" id="dKick">-</span>
+  snare ● <span class="dbv" id="dSnare">-</span>
+</div>
+
+<div id="controls">
+  <div class="ctrl-group">
+    <div class="ctrl-label">Tocando Agora</div>
+    <div class="track-info">
+      <div class="track-dot paused" id="trackDot"></div>
+      <div class="track-name" id="trackName">demo.mp3</div>
+    </div>
+    <div class="bars">
+      <div class="bar" id="b1"></div><div class="bar" id="b2"></div>
+      <div class="bar" id="b3"></div><div class="bar" id="b4"></div>
+      <div class="bar" id="b5"></div><div class="bar" id="b6"></div>
+      <div class="bar" id="b7"></div><div class="bar" id="b8"></div>
+    </div>
+  </div>
+  <div class="ctrl-group">
+    <div class="ctrl-label">Paleta</div>
+    <div class="ctrl-row">
+      <div class="palette-swatch active" data-palette="0" style="background:linear-gradient(135deg,#00ccff,#0044cc);"></div>
+      <div class="palette-swatch" data-palette="1" style="background:linear-gradient(135deg,#9933ff,#3300cc);"></div>
+      <div class="palette-swatch" data-palette="2" style="background:linear-gradient(135deg,#00ffcc,#006699);"></div>
+      <div class="palette-swatch" data-palette="3" style="background:linear-gradient(135deg,#3366ff,#cc00ff);"></div>
+      <div class="palette-swatch" data-palette="4" style="background:linear-gradient(135deg,#ddeeff,#4477aa);"></div>
+    </div>
+  </div>
+</div>
+
+<div class="watermark">LUK2 FREE DEMO</div>
+<div id="idleMsg">▶ coloque sua música para começar</div>
+
+<div id="startOverlay">
+  <div class="start-brand">LUK2</div>
+  <div class="start-sub">Motion State</div>
+  <div class="start-tagline">Visualizador Fractal em Tempo Real</div>
+  <button class="start-btn" id="startBtn"><span>▶&nbsp;&nbsp;INICIAR DEMO</span></button>
+  <div class="start-note">ou escolha sua própria música para começar</div>
+  <div class="file-drop-area" id="fileDropArea">
+    ou arraste sua própria música aqui<br>
+    <span style="color:rgba(255,255,255,.50);">mp3 · wav · ogg · flac</span>
+    <input type="file" id="fileInput" accept="audio/*">
+  </div>
+</div>
+
+<div id="loadingMsg">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Carregando áudio…</div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+//  SHADERS
+//  O shader recebe estado de movimento, não valores de áudio bruto.
+//  Cada uniform tem semântica de movimento, não de frequência.
+// ═══════════════════════════════════════════════════════════════════
+const VS=`#version 300 es
+in vec2 in_vert;out vec2 v_uv;
+void main(){v_uv=in_vert*.5+.5;gl_Position=vec4(in_vert,0.,1.);}`;
+
+const FS=`#version 300 es
+precision highp float;
+in vec2 v_uv;out vec4 f_color;
+uniform vec2  u_res;
+uniform float u_time;
+// ── Motion State uniforms (sem áudio bruto) ──────────────────────
+uniform float u_breath;     // escala orgânica, bass spring
+uniform float u_pulse;      // expansão radial, impulso de kick
+uniform float u_warp;       // distorção de domínio, impulso lento de kick
+uniform float u_flow;       // ângulo acumulado, conduzido por mid
+uniform float u_flash;      // brilho/flash, impulso de snare+kick
+uniform float u_colorPhase; // fase de cor acumulada por eventos
+uniform int   u_palette;
+
+vec3 aces(vec3 x){return clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),0.,1.);}
+vec2 rot2(vec2 p,float a){float c=cos(a),s=sin(a);return vec2(p.x*c-p.y*s,p.x*s+p.y*c);}
+vec3 cpal(float t,vec3 a,vec3 b,vec3 c,vec3 d){return a+b*cos(6.28318*(c*t+d));}
+
+// Paletas frias — base de identidade visual
+vec3 coldColor(float t,int pal){
+  if(pal==0) return cpal(t,vec3(.35,.50,.65),vec3(.35,.40,.50),vec3(1.,1.,1.),vec3(.58,.78,.92));
+  if(pal==1) return cpal(t,vec3(.40,.25,.60),vec3(.38,.28,.48),vec3(1.,1.,1.),vec3(.70,.72,.88));
+  if(pal==2) return cpal(t,vec3(.15,.60,.60),vec3(.22,.38,.36),vec3(1.,1.,1.),vec3(.50,.72,.92));
+  if(pal==3) return cpal(t,vec3(.25,.35,.72),vec3(.32,.26,.55),vec3(1.,.85,1.),vec3(.60,.68,.95));
+  return         cpal(t,vec3(.68,.78,.90),vec3(.26,.26,.36),vec3(1.,1.,1.),vec3(.55,.76,.88));
+}
+
+// Cor quente — flash de impacto (magenta → laranja)
+vec3 warmColor(float t){
+  return cpal(t,vec3(.60,.28,.38),vec3(.48,.36,.26),vec3(1.,.62,.42),vec3(0.,.12,.38));
+}
+
+void main(){
+  vec2 uv=(gl_FragCoord.xy*2.-u_res)/u_res.y;
+
+  // ── 1. Breath: escala orgânica (spring do bass) ─────────────────
+  // Overshoot do spring cria sensação de respiração viva, não linear
+  uv*=1.+u_breath*0.38;
+
+  // ── 2. Flow: rotação por ângulo acumulado (não por tempo) ────────
+  // u_flow cresce com mid energy — quando a música empurra, gira mais
+  // u_time*0.03 só para baseline mínimo sem música
+  uv=rot2(uv,u_flow+u_time*0.03);
+
+  // ── 3. Warp: distorção de domínio do impulso de kick ─────────────
+  // Direção via u_time; magnitude via u_warp (decai com física própria)
+  float wt=u_time*1.9;
+  uv+=vec2(
+    sin(uv.y*3.1+wt      )*u_warp*0.55,
+    cos(uv.x*2.6+wt*1.28 )*u_warp*0.55
+  );
+  // Segunda camada de warp — mais orgânica, frequência diferente
+  uv+=vec2(
+    sin(uv.x*4.8+uv.y*1.7+wt*0.52)*u_warp*0.22,
+    cos(uv.y*3.9-uv.x*1.4+wt*0.70)*u_warp*0.22
+  );
+
+  float r=length(uv);
+  float ang=atan(uv.y,uv.x);
+
+  // ── 4. Rings: anéis que reagem ao pulse ──────────────────────────
+  // u_pulse desloca a fase dos anéis para fora — kick cria onda radial
+  // rings primários: basicamente a forma visual principal
+  float ring0=sin(r*8.0  -u_time*2.0-u_pulse*7.0)*0.5+0.5;
+  // rings secundários: escala diferente, speed diferente
+  float ring1=sin(r*4.8  -u_time*1.3-u_pulse*4.5)*0.5+0.5;
+  // detalhe fino: movido pelo tempo, não pelo pulse (estabilidade)
+  float ring2=sin(r*15.0 -u_time*3.8              )*0.5+0.5;
+  // ripple angular: usa u_flow acumulado, não u_time — gira com a música
+  float ripple=sin(ang*6.0+u_flow*4.0+r*2.2)*0.5+0.5;
+
+  float pat=ring0*0.44+ring1*0.28+ring2*0.10+ripple*0.18;
+
+  // ── 5. Cor ───────────────────────────────────────────────────────
+  float ct=pat*1.25+u_colorPhase;
+  vec3 cold=coldColor(ct,u_palette);
+  vec3 warm=warmColor(ct+0.36+u_time*0.03);
+
+  // Flash mistura quente — proporção direta ao estado de flash
+  float heatAmt=clamp(u_flash*0.92,0.,0.88);
+  vec3 col=mix(cold,warm,heatAmt);
+
+  // ── 6. Center glow ───────────────────────────────────────────────
+  float glo=0.13/(r+0.065);
+  // Glow frio pulsa com breath (bass)
+  col+=cold*glo*(0.32+u_breath*0.90+u_pulse*0.35);
+  // Glow quente surge no flash (kick/snare)
+  col+=warm*glo*u_flash*0.75;
+
+  // ── 7. Brilho total: pulse expande e ilumina ─────────────────────
+  col*=0.82+u_pulse*0.55+u_breath*0.28;
+
+  // ── 8. Vignette ──────────────────────────────────────────────────
+  col*=smoothstep(1.70,.30,r);
+
+  // ── 9. Tonemapping ───────────────────────────────────────────────
+  col=aces(col*1.70);
+
+  f_color=vec4(col,1.);
+}`;
+
+// ── GL setup ────────────────────────────────
+const canvas=document.getElementById('glCanvas');
+const gl=canvas.getContext('webgl2');
+function sh(type,src){
+  const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);
+  if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))console.error(gl.getShaderInfoLog(s));
+  return s;
+}
+const prog=gl.createProgram();
+gl.attachShader(prog,sh(gl.VERTEX_SHADER,VS));
+gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,FS));
+gl.linkProgram(prog);
+const vbo=gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER,vbo);
+gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]),gl.STATIC_DRAW);
+const vao=gl.createVertexArray();gl.bindVertexArray(vao);
+const al=gl.getAttribLocation(prog,'in_vert');
+gl.enableVertexAttribArray(al);gl.vertexAttribPointer(al,2,gl.FLOAT,false,0,0);
+const U={};
+['u_time','u_res','u_breath','u_pulse','u_warp','u_flow','u_flash','u_colorPhase','u_palette']
+.forEach(n=>U[n]=gl.getUniformLocation(prog,n));
+function resize(){canvas.width=innerWidth;canvas.height=innerHeight;gl.viewport(0,0,canvas.width,canvas.height);}
+resize();window.addEventListener('resize',resize);
+
+// ═══════════════════════════════════════════════════════════════════
+//  ÁUDIO — análise bruta (igual ao demo base, sem alteração)
+// ═══════════════════════════════════════════════════════════════════
+let audioCtx,analyser,sourceNode,audioBuffer;
+const FFT=512;
+let freqData=null;
+
+function setupAnalyser(){
+  analyser=audioCtx.createAnalyser();
+  analyser.fftSize=FFT;
+  analyser.smoothingTimeConstant=0.0;
+  analyser.minDecibels=-90;analyser.maxDecibels=-10;
+  freqData=new Uint8Array(analyser.frequencyBinCount);
+  analyser.connect(audioCtx.destination);
+}
+async function loadURL(url){
+  showLoading(true);
+  try{
+    const r=await fetch(url);if(!r.ok)throw 0;
+    audioBuffer=await audioCtx.decodeAudioData(await r.arrayBuffer());
+    showLoading(false);startPlayback();
+    document.getElementById('trackName').textContent=url.split('/').pop();
+    return true;
+  }catch{showLoading(false);return false;}
+}
+async function loadFile(file){
+  showLoading(true);
+  try{
+    audioBuffer=await audioCtx.decodeAudioData(await file.arrayBuffer());
+    showLoading(false);startPlayback();
+    document.getElementById('trackName').textContent=file.name;
+  }catch{showLoading(false);}
+}
+function startPlayback(){
+  if(sourceNode){sourceNode.disconnect();sourceNode=null;}
+  sourceNode=audioCtx.createBufferSource();
+  sourceNode.buffer=audioBuffer;sourceNode.loop=true;
+  sourceNode.connect(analyser);sourceNode.start(0);
+  document.getElementById('trackDot').classList.remove('paused');
+  bTimes.length=0;bpm=0;bassI0=-1;bassI1=-1;
+  isPlaying=true;
+  document.getElementById('idleMsg').classList.add('hidden');
+}
+
+function bandRMS(lo,hi){
+  if(!analyser||!freqData)return 0;
+  const bin=audioCtx.sampleRate/FFT;
+  const i0=Math.max(0,Math.floor(lo/bin));
+  const i1=Math.min(freqData.length-1,Math.floor(hi/bin));
+  if(i1<i0)return 0;
+  let s=0;for(let i=i0;i<=i1;i++){const v=freqData[i]/255;s+=v*v;}
+  return Math.sqrt(s/(i1-i0+1));
+}
+function band(lo,hi){
+  if(!analyser||!freqData)return 0;
+  const bin=audioCtx.sampleRate/FFT;
+  const i0=Math.max(0,Math.floor(lo/bin));
+  const i1=Math.min(freqData.length-1,Math.floor(hi/bin));
+  let s=0;for(let i=i0;i<=i1;i++)s+=freqData[i]/255;
+  return i1>=i0?s/(i1-i0+1):0;
+}
+
+// ── Spectral Flux (beat/kick detection) ─────
+const FLUX_HIST=43;
+const fluxHistory=new Float32Array(FLUX_HIST);
+let fluxPtr=0,fluxSmooth=0,fluxPeak=0,prevFFT=null;
+const BEAT_SENS=1.1,COOL_FRAMES=8;
+let beatCool=0,bpm=0;
+const bTimes=[];
+let bassI0=-1,bassI1=-1;
+
+// ── Valores brutos da última frame de áudio ──
+// Esses NÃO vão direto para o shader.
+// Alimentam o Motion State abaixo.
+let rawBass=0,rawMid=0;
+let kickFired=false,kickMag=0;
+let snareFired=false,snareMag=0;
+let prevSnareSmooth=0,snareCooldown=0;
+
+function processAudio(){
+  if(!analyser||!freqData)return;
+  analyser.getByteFrequencyData(freqData);
+  if(bassI0<0){
+    const bin=audioCtx.sampleRate/FFT;
+    bassI0=Math.max(0,Math.floor(20/bin));
+    bassI1=Math.min(freqData.length-1,Math.floor(140/bin));
+  }
+
+  const rB=bandRMS(20,140);
+  const rM=bandRMS(140,4000);
+  const rS=bandRMS(200,800);
+
+  // Expõe valores contínuos para o Motion State
+  rawBass=rB;
+  rawMid=rM;
+
+  // ── Spectral Flux (kick detection) ──────────
+  let flux=0;
+  if(prevFFT!==null){
+    for(let i=bassI0;i<=bassI1;i++){
+      const diff=(freqData[i]/255)-prevFFT[i];
+      if(diff>0)flux+=diff;
+    }
+  }
+  if(prevFFT===null)prevFFT=new Float32Array(freqData.length);
+  for(let i=0;i<freqData.length;i++)prevFFT[i]=freqData[i]/255;
+  fluxSmooth=0.3*flux+0.7*fluxSmooth;
+  flux=fluxSmooth;
+  fluxPeak=Math.max(fluxPeak*0.98,flux);
+  fluxHistory[fluxPtr%FLUX_HIST]=flux;
+  fluxPtr++;
+
+  let avg=0;for(let i=0;i<FLUX_HIST;i++)avg+=fluxHistory[i];avg/=FLUX_HIST;
+  let variance=0;for(let i=0;i<FLUX_HIST;i++){const d=fluxHistory[i]-avg;variance+=d*d;}variance/=FLUX_HIST;
+  const threshold=Math.max(avg+variance*BEAT_SENS,avg*1.2);
+  const bN=Math.min(rB/(Math.max(rB*0.1,0.01)),1);
+
+  kickFired=false;
+  if(beatCool>0){beatCool--;}
+  else if(flux>threshold&&bN>0.08&&flux>=fluxPeak*0.95){
+    kickFired=true;
+    kickMag=Math.min(bN*1.2,1.0);
+    beatCool=COOL_FRAMES;
+    // BPM tracking
+    const now=performance.now();bTimes.push(now);
+    if(bTimes.length>8)bTimes.shift();
+    if(bTimes.length>=2){
+      const diffs=[];for(let i=1;i<bTimes.length;i++)diffs.push(bTimes[i]-bTimes[i-1]);
+      const avgD=diffs.reduce((a,b)=>a+b,0)/diffs.length;
+      if(avgD>0)bpm=Math.round(60000/avgD);
+    }
+    // Beat flash border
+    const bf=document.getElementById('beatFlash');
+    bf.classList.add('active');setTimeout(()=>bf.classList.remove('active'),55);
+  }
+
+  // ── Snare peak detection (200-800Hz) ────────
+  // Evento discreto: subida rápida que cruza limiar com cooldown
+  const snareSmooth=prevSnareSmooth*0.6+rS*0.4;
+  snareFired=false;
+  if(snareCooldown>0){snareCooldown--;}
+  else if(snareSmooth>0.28&&snareSmooth>prevSnareSmooth*1.35){
+    snareFired=true;
+    snareMag=Math.min(snareSmooth*2.0,1.0);
+    snareCooldown=10;
+  }
+  prevSnareSmooth=snareSmooth;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  MOTION STATE — camada física entre áudio e shader
+//
+//  Cada variável visual tem posição, velocidade e comportamento próprio.
+//  O áudio injeta forças/impulsos, não valores diretos.
+//  O shader só vê o estado de movimento, não o áudio bruto.
+// ═══════════════════════════════════════════════════════════════════
+const breath = { pos:0, vel:0 };  // spring → bass
+const pulse  = { pos:0, vel:0 };  // impulso rápido → kick
+const warp   = { pos:0, vel:0 };  // impulso lento  → kick
+const mflash = { pos:0, vel:0 };  // impulso muito rápido → snare + kick
+let   flowAngle  = 0;              // acumulador → mid
+let   colorPhase = 0;              // acumulador → eventos fortes
+
+// Pico de bass para normalização dinâmica do spring
+let peakBass=0.01;
+
+function updateMotionState(){
+  // ── Kick: injeta impulso em pulse, warp, flash ──────────────────
+  if(kickFired){
+    pulse.vel  += kickMag*1.60;   // impulso forte e rápido
+    warp.vel   += kickMag*0.90;   // impulso mais contido, mais lento
+    mflash.vel += kickMag*1.30;
+    colorPhase += kickMag*0.55;   // salto de cor instantâneo no kick
+  }
+
+  // ── Snare: injeta impulso em flash (mais forte que kick) ────────
+  if(snareFired){
+    mflash.vel += snareMag*2.00;  // snare = flash mais brilhante
+  }
+
+  // ── Bass → breath: spring com overshoot ─────────────────────────
+  // Spring puxa para o target; damping controla o overshoot.
+  // stiffness baixo = movimento lento e orgânico.
+  peakBass=Math.max(peakBass*0.998,rawBass);
+  const breathTarget=(rawBass/(peakBass+1e-6))*0.42;
+  breath.vel+=(breathTarget-breath.pos)*0.09;   // stiffness
+  breath.pos+=breath.vel;
+  breath.vel*=0.78;                              // damping → overshoot natural
+
+  // ── Mid → flow: acumulador contínuo ─────────────────────────────
+  // Nunca para completamente (base mínima).
+  // Mid acelera; low mid = rotação quase parada.
+  const peakMid=0.30; // referência fixa para mid normalizado
+  const midNorm=Math.min(rawMid/peakMid,1.0);
+  flowAngle+=0.005+midNorm*0.048;
+
+  // ── Pulse: decaimento rápido (punch seco) ───────────────────────
+  pulse.pos+=pulse.vel;
+  pulse.vel*=0.62;
+  pulse.pos=Math.max(0,pulse.pos*0.82);
+  pulse.pos=Math.min(pulse.pos,2.5);            // teto de segurança
+
+  // ── Warp: decaimento mais lento (distorção sustentada) ──────────
+  warp.pos+=warp.vel;
+  warp.vel*=0.80;
+  warp.pos=Math.max(0,warp.pos*0.90);
+  warp.pos=Math.min(warp.pos,1.5);
+
+  // ── Flash: decaimento muito rápido (flash instantâneo) ──────────
+  mflash.pos+=mflash.vel;
+  mflash.vel*=0.42;
+  mflash.pos=Math.max(0,mflash.pos*0.68);
+  mflash.pos=Math.min(mflash.pos,2.0);
+
+  // ── Color drift: desacelera com o tempo ─────────────────────────
+  // colorPhase só recebe saltos diretos (no kick);
+  // acumula sem resetar — deriva a fase de cor ao longo da música.
+}
+
+// ── Estado ────────────────────────────────
+let palette=0,isPlaying=false;
+
+// ── Render Loop ────────────────────────────
+let startT=null;
+const barIds=['b1','b2','b3','b4','b5','b6','b7','b8'];
+const barRanges=[[20,60],[60,120],[120,250],[250,500],[500,1000],[1000,2500],[2500,6000],[6000,16000]];
+let debugVisible=false;
+
+function render(ts){
+  requestAnimationFrame(render);
+  if(!startT)startT=ts;
+  const latency=audioCtx?(audioCtx.outputLatency||0)+(audioCtx.baseLatency||0):0;
+  const t=(ts-startT)/1000+latency;
+
+  // 1. Análise de áudio (eventos + valores brutos)
+  if(isPlaying) processAudio();
+  else{ kickFired=false;snareFired=false;rawBass=0;rawMid=0; }
+
+  // 2. Atualiza Motion State (física)
+  updateMotionState();
+
+  // 3. HUD
+  document.getElementById('bpmDisplay').textContent=bpm>0?bpm:'---';
+  if(analyser&&freqData)
+    barRanges.forEach((r,i)=>document.getElementById(barIds[i]).style.height=Math.max(3,band(r[0],r[1])*180)+'px');
+
+  // 4. Debug overlay
+  if(debugVisible){
+    document.getElementById('dBreath').textContent=breath.pos.toFixed(3);
+    document.getElementById('dPulse' ).textContent=pulse.pos.toFixed(3);
+    document.getElementById('dWarp'  ).textContent=warp.pos.toFixed(3);
+    document.getElementById('dFlow'  ).textContent=(flowAngle%6.283).toFixed(3);
+    document.getElementById('dFlash' ).textContent=mflash.pos.toFixed(3);
+    document.getElementById('dKick'  ).textContent=kickFired?'●':'-';
+    document.getElementById('dSnare' ).textContent=snareFired?'●':'-';
+  }
+
+  // 5. Shader — recebe Motion State, não áudio bruto
+  gl.useProgram(prog);gl.bindVertexArray(vao);
+  gl.uniform1f(U.u_time,       t);
+  gl.uniform2f(U.u_res,        canvas.width,canvas.height);
+  gl.uniform1f(U.u_breath,     breath.pos);
+  gl.uniform1f(U.u_pulse,      pulse.pos);
+  gl.uniform1f(U.u_warp,       warp.pos);
+  gl.uniform1f(U.u_flow,       flowAngle);
+  gl.uniform1f(U.u_flash,      mflash.pos);
+  gl.uniform1f(U.u_colorPhase, colorPhase);
+  gl.uniform1i(U.u_palette,    palette);
+  gl.drawArrays(gl.TRIANGLES,0,6);
+}
+requestAnimationFrame(render);
+
+// ── UI ────────────────────────────────────
+document.querySelectorAll('.palette-swatch').forEach(sw=>{
+  sw.addEventListener('click',()=>{
+    palette=parseInt(sw.dataset.palette);
+    document.querySelectorAll('.palette-swatch').forEach(s=>s.classList.toggle('active',parseInt(s.dataset.palette)===palette));
+  });
+});
+
+document.getElementById('startBtn').addEventListener('click',async()=>{
+  audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  setupAnalyser();
+  const ok=await loadURL('assets/audio/demo.mp3');
+  if(!ok){
+    const osc=audioCtx.createOscillator(),g=audioCtx.createGain();
+    osc.frequency.value=80;g.gain.value=0.04;
+    osc.connect(g);g.connect(analyser);osc.start();
+    document.getElementById('trackName').textContent='coloque demo.mp3 em assets/audio/';
+    document.getElementById('trackDot').classList.remove('paused');
+    isPlaying=true;
+    document.getElementById('idleMsg').classList.add('hidden');
+  }
+  const ol=document.getElementById('startOverlay');
+  ol.classList.add('hidden');setTimeout(()=>ol.style.display='none',650);
+});
+
+document.getElementById('idleMsg').addEventListener('click',()=>document.getElementById('fileInput').click());
+const fda=document.getElementById('fileDropArea'),fi=document.getElementById('fileInput');
+fda.addEventListener('click',()=>fi.click());
+fi.addEventListener('change',async e=>{
+  const f=e.target.files[0];if(!f)return;
+  if(!audioCtx){audioCtx=new(window.AudioContext||window.webkitAudioContext)();setupAnalyser();}
+  await loadFile(f);
+  const ol=document.getElementById('startOverlay');ol.classList.add('hidden');setTimeout(()=>ol.style.display='none',650);
+});
+fda.addEventListener('dragover',e=>{e.preventDefault();fda.style.borderColor='rgba(0,200,255,.75)';});
+fda.addEventListener('dragleave',()=>{fda.style.borderColor='rgba(255,255,255,.30)';});
+fda.addEventListener('drop',async e=>{
+  e.preventDefault();fda.style.borderColor='rgba(255,255,255,.18)';
+  const f=e.dataTransfer.files[0];if(!f||!f.type.startsWith('audio/'))return;
+  if(!audioCtx){audioCtx=new(window.AudioContext||window.webkitAudioContext)();setupAnalyser();}
+  await loadFile(f);
+  const ol=document.getElementById('startOverlay');ol.classList.add('hidden');setTimeout(()=>ol.style.display='none',650);
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='p'||e.key==='P'){
+    palette=(palette+1)%5;
+    document.querySelectorAll('.palette-swatch').forEach(s=>s.classList.toggle('active',parseInt(s.dataset.palette)===palette));
+  }
+  // D: toggle debug overlay (motion state values em tempo real)
+  if(e.key==='d'||e.key==='D'){
+    debugVisible=!debugVisible;
+    document.getElementById('debug').classList.toggle('show',debugVisible);
+  }
+});
+function showLoading(v){document.getElementById('loadingMsg').classList.toggle('show',v);}
+</script>
+</body>
+</html>
