@@ -435,9 +435,11 @@ async function loadURL(url){
 }
 async function loadFile(file){
   showLoading(true);
-  audioBuffer=await audioCtx.decodeAudioData(await file.arrayBuffer());
-  showLoading(false);play();
-  document.getElementById('trackName').textContent=file.name;
+  try{
+    audioBuffer=await audioCtx.decodeAudioData(await file.arrayBuffer());
+    showLoading(false);play();
+    document.getElementById('trackName').textContent=file.name;
+  }catch{showLoading(false);}
 }
 function play(){
   if(sourceNode){sourceNode.disconnect();sourceNode=null;}
@@ -445,6 +447,9 @@ function play(){
   sourceNode.buffer=audioBuffer;sourceNode.loop=true;
   sourceNode.connect(analyser);sourceNode.start(0);
   document.getElementById('trackDot').classList.remove('paused');
+  // reset BPM e índices de banda ao trocar música
+  bTimes.length=0;bpm=0;
+  bassI0=-1;bassI1=-1;
 }
 
 // ── Análise de banda — RMS igual ao Python ────
@@ -604,7 +609,7 @@ fi.addEventListener('change',async e=>{
   const ol=document.getElementById('startOverlay');ol.classList.add('hidden');setTimeout(()=>ol.style.display='none',650);
 });
 fda.addEventListener('dragover',e=>{e.preventDefault();fda.style.borderColor='rgba(120,170,255,0.8)';});
-fda.addEventListener('dragleave',()=>{fda.style.borderColor='rgba(255,255,255,0.18)';});
+fda.addEventListener('dragleave',()=>{fda.style.borderColor='rgba(255,255,255,0.35)';});
 fda.addEventListener('drop',async e=>{
   e.preventDefault();fda.style.borderColor='rgba(255,255,255,0.18)';
   const f=e.dataTransfer.files[0];if(!f||!f.type.startsWith('audio/'))return;
