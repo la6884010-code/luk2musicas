@@ -100,19 +100,26 @@
   /* ── Idle message ── */
   #idleMsg{
     position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-    z-index:25;pointer-events:none;
+    z-index:25;pointer-events:auto;
     display:flex;align-items:center;gap:10px;
     background:rgba(10,12,20,0.7);
-    border:1px solid rgba(255,255,255,0.12);
+    border:1px solid rgba(255,255,255,0.18);
     border-radius:100px;
     padding:12px 28px;
     backdrop-filter:blur(12px);
     opacity:1;
     transition:opacity 0.8s ease;
     font-family:'Space Mono',monospace;font-size:13px;letter-spacing:2px;
-    color:rgba(255,255,255,0.7);white-space:nowrap;
+    color:rgba(255,255,255,0.85);white-space:nowrap;
+    cursor:pointer;
+    animation:idle-pulse 2s ease-in-out infinite;
   }
-  #idleMsg.hidden{opacity:0;}
+  #idleMsg:hover{background:rgba(120,170,255,0.15);border-color:rgba(120,170,255,0.5);color:#fff;}
+  #idleMsg.hidden{opacity:0;pointer-events:none;}
+  @keyframes idle-pulse{
+    0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,0.0);border-color:rgba(255,255,255,0.18);}
+    50%{box-shadow:0 0 24px 4px rgba(120,170,255,0.3);border-color:rgba(120,170,255,0.55);}
+  }
 
   /* ── Hint message ── */
   #hint{
@@ -623,6 +630,7 @@ document.getElementById('startBtn').addEventListener('click',async()=>{
   ol.classList.add('hidden');setTimeout(()=>ol.style.display='none',650);
 });
 
+document.getElementById('idleMsg').addEventListener('click',()=>document.getElementById('fileInput').click());
 const fda=document.getElementById('fileDropArea'),fi=document.getElementById('fileInput');
 fda.addEventListener('click',()=>fi.click());
 fi.addEventListener('change',async e=>{
