@@ -97,6 +97,23 @@
   .track-name{font-size:11px;color:rgba(255,255,255,0.55);letter-spacing:1px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .watermark{position:absolute;bottom:80px;right:24px;z-index:18;pointer-events:none;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,0.12);}
 
+  /* ── Idle message ── */
+  #idleMsg{
+    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    z-index:25;pointer-events:none;
+    display:flex;align-items:center;gap:10px;
+    background:rgba(10,12,20,0.7);
+    border:1px solid rgba(255,255,255,0.12);
+    border-radius:100px;
+    padding:12px 28px;
+    backdrop-filter:blur(12px);
+    opacity:1;
+    transition:opacity 0.8s ease;
+    font-family:'Space Mono',monospace;font-size:13px;letter-spacing:2px;
+    color:rgba(255,255,255,0.7);white-space:nowrap;
+  }
+  #idleMsg.hidden{opacity:0;}
+
   /* ── Hint message ── */
   #hint{
     position:absolute;bottom:90px;left:50%;transform:translateX(-50%);
@@ -256,6 +273,7 @@
 </div>
 
 <div class="watermark">LUK2 FREE DEMO</div>
+<div id="idleMsg">▶ coloque sua música para começar</div>
 <div id="hint"><span class="hint-text">Explore os <span class="hint-key">MODOS</span> e <span class="hint-key">PALETAS</span> abaixo</span></div>
 
 
@@ -451,7 +469,8 @@ function play(){
   // reset BPM e índices de banda ao trocar música
   bTimes.length=0;bpm=0;
   bassI0=-1;bassI1=-1;
-  isPlaying=true;startT=null;
+  isPlaying=true;
+  document.getElementById('idleMsg').classList.add('hidden');
 }
 
 // ── Análise de banda — RMS igual ao Python ────
@@ -555,7 +574,7 @@ function render(ts){
   if(!startT)startT=ts;
   // Compensa latência de saída do browser (outputLatency + baseLatency)
   const latency = audioCtx ? (audioCtx.outputLatency||0)+(audioCtx.baseLatency||0) : 0;
-  const t=isPlaying ? (ts-startT)/1000+latency : 0;
+  const t=(ts-startT)/1000+latency;
   if(isPlaying) processAudio();
   else{ sBass=sMid=sHigh=sKick=sSnare=sAudio=beatFlash=0; }
   if(beatFlash>.6)colorOffV+=beatFlash*.14;
