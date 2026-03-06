@@ -40,8 +40,8 @@
   .start-btn span{position:relative;z-index:1;}
   .start-note{margin-top:32px;color:rgba(255,255,255,0.25);font-size:11px;letter-spacing:1px;text-align:center;}
   .file-drop-area{
-    margin-top:20px;padding:12px 28px;border:1px dashed rgba(255,255,255,0.18);border-radius:12px;
-    color:rgba(255,255,255,0.35);font-size:11px;letter-spacing:1px;cursor:pointer;transition:all 0.2s ease;text-align:center;
+    margin-top:20px;padding:12px 28px;border:1px dashed rgba(255,255,255,0.35);border-radius:12px;
+    color:rgba(255,255,255,0.7);font-size:11px;letter-spacing:1px;cursor:pointer;transition:all 0.2s ease;text-align:center;
   }
   .file-drop-area:hover{border-color:rgba(120,170,255,0.5);color:rgba(255,255,255,0.6);background:rgba(120,170,255,0.06);}
   #fileInput{display:none;}
@@ -245,8 +245,8 @@
   <div class="ctrl-group">
     <div class="ctrl-label">Paleta</div>
     <div class="ctrl-row">
-      <div class="palette-swatch active" data-palette="0" style="background:linear-gradient(135deg,#ff6030,#0060ff);"></div>
-      <div class="palette-swatch" data-palette="1" style="background:linear-gradient(135deg,#ff00cc,#00ccff);"></div>
+      <div class="palette-swatch" data-palette="0" style="background:linear-gradient(135deg,#ff6030,#0060ff);"></div>
+      <div class="palette-swatch active" data-palette="1" style="background:linear-gradient(135deg,#ff00cc,#00ccff);"></div>
       <div class="palette-swatch" data-palette="2" style="background:linear-gradient(135deg,#ffb3d9,#b3d9ff);"></div>
       <div class="palette-swatch" data-palette="3" style="background:linear-gradient(135deg,#ff0099,#ff9900);"></div>
       <div class="palette-swatch" data-palette="4" style="background:linear-gradient(135deg,#00ffcc,#003366);"></div>
@@ -262,7 +262,7 @@
   <div class="start-brand">LUK2</div>
   <div class="start-tagline">Visualizador Fractal em Tempo Real</div>
   <button class="start-btn" id="startBtn"><span>▶&nbsp;&nbsp;INICIAR DEMO</span></button>
-  <div class="start-note">Áudio de demonstração pré-carregado</div>
+  <div class="start-note">ou escolha sua própria música para começar</div>
   <div class="file-drop-area" id="fileDropArea">
     ou arraste sua própria música aqui<br>
     <span style="opacity:0.5;">mp3 · wav · ogg · flac</span>
@@ -535,7 +535,7 @@ function processAudio(){
 }
 
 // ── Estado ───────────────────────────────────
-let mode=0,palette=0,colorOffset=0,colorOffV=0;
+let mode=0,palette=1,colorOffset=0,colorOffV=0;
 
 // ── Render Loop ──────────────────────────────
 let startT=null;
