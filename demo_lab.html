@@ -343,6 +343,15 @@ const U = {};
 function resize(){ canvas.width = innerWidth; canvas.height = innerHeight; gl.viewport(0,0,canvas.width,canvas.height); }
 resize(); window.addEventListener('resize', resize);
 
+// Força compilação do shader agora (não no primeiro frame do render loop)
+// Sem isso, o driver da GPU compila no primeiro drawArrays e congela ~2s
+gl.useProgram(prog); gl.bindVertexArray(vao);
+gl.uniform1f(U.u_time,0); gl.uniform2f(U.u_res,canvas.width,canvas.height);
+gl.uniform1f(U.u_breath,0); gl.uniform1f(U.u_pulse,0); gl.uniform1f(U.u_warp,0);
+gl.uniform1f(U.u_flow,0);  gl.uniform1f(U.u_flash,0); gl.uniform1f(U.u_colorPhase,0);
+gl.uniform1i(U.u_palette,0);
+gl.drawArrays(gl.TRIANGLES,0,6);
+
 
 // ═══════════════════════════════════════════════════════════════════════
 //  ÁUDIO — extrai canais brutos e detecta eventos discretos
