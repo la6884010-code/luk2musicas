@@ -509,7 +509,7 @@ function band(lo,hi){
 const FLUX_HIST=43;
 const fluxHistory=new Float32Array(FLUX_HIST);
 let fluxPtr=0,fluxSmooth=0,fluxPeak=0,prevFFT=null;
-const BEAT_SENS=1.5,COOL_FRAMES=8;
+const BEAT_SENS=1.1,COOL_FRAMES=8;
 let beatFlash=0,beatCool=0,bpm=0;
 const bTimes=[];
 let sBass=0,sMid=0,sHigh=0,sKick=0,sSnare=0,sAudio=0;
@@ -553,7 +553,7 @@ function processAudio(){
 
   let avg=0;for(let i=0;i<FLUX_HIST;i++)avg+=fluxHistory[i];avg/=FLUX_HIST;
   let variance=0;for(let i=0;i<FLUX_HIST;i++){const d=fluxHistory[i]-avg;variance+=d*d;}variance/=FLUX_HIST;
-  const threshold=Math.max(avg+variance*BEAT_SENS,avg*1.5);
+  const threshold=Math.max(avg+variance*BEAT_SENS,avg*1.2);
   const energyOK=bN>0.08;
   const isPeak=flux>=fluxPeak*0.95;
 
