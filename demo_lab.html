@@ -211,105 +211,97 @@ in vec2 v_uv; out vec4 f_color;
 uniform vec2  u_res;
 uniform float u_time;
 
-// ── Motion State — única fonte de dados para o shader ────────────────
-uniform float u_breath;     // escala orgânica (bass spring)
-uniform float u_pulse;      // expansão radial (impulso de kick)
-uniform float u_warp;       // distorção de domínio (impulso lento de kick)
-uniform float u_flow;       // ângulo acumulado (conduzido por mid)
-uniform float u_flash;      // brilho / cor quente (impulso de snare+kick)
-uniform float u_colorPhase; // fase de cor acumulada por eventos
+// ── Motion State ─────────────────────────────────────────────────────
+uniform float u_breath;     // escala / tamanho do blob (bass spring)
+uniform float u_pulse;      // expansão radial instantânea (kick)
+uniform float u_warp;       // distorção da borda (kick lento)
+uniform float u_flow;       // ângulo acumulado (mid)
+uniform float u_flash;      // flash branco / cor quente (snare + kick)
+uniform float u_colorPhase;
 
 uniform int u_palette;
 
 vec3 aces(vec3 x){ return clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),0.,1.); }
-vec2 rot2(vec2 p, float a){ float c=cos(a),s=sin(a); return vec2(p.x*c-p.y*s,p.x*s+p.y*c); }
-vec3 cpal(float t, vec3 a, vec3 b, vec3 c, vec3 d){ return a+b*cos(6.28318*(c*t+d)); }
+vec2 rot2(vec2 p,float a){ float c=cos(a),s=sin(a); return vec2(p.x*c-p.y*s,p.x*s+p.y*c); }
+vec3 cpal(float t,vec3 a,vec3 b,vec3 c,vec3 d){ return a+b*cos(6.28318*(c*t+d)); }
 
-// Paletas frias: identidade visual base
-vec3 coldColor(float t, int pal){
-  if(pal==0) return cpal(t, vec3(.34,.50,.64), vec3(.34,.40,.50), vec3(1.,1.,1.), vec3(.58,.78,.92));
-  if(pal==1) return cpal(t, vec3(.40,.24,.60), vec3(.38,.28,.48), vec3(1.,1.,1.), vec3(.70,.72,.88));
-  if(pal==2) return cpal(t, vec3(.14,.60,.58), vec3(.22,.38,.36), vec3(1.,1.,1.), vec3(.50,.72,.92));
-  if(pal==3) return cpal(t, vec3(.24,.34,.72), vec3(.32,.26,.54), vec3(1.,.85,1.), vec3(.60,.68,.95));
-  return         cpal(t, vec3(.67,.77,.89), vec3(.26,.25,.35), vec3(1.,1.,1.), vec3(.55,.76,.88));
+vec3 coldColor(float t,int pal){
+  if(pal==0) return cpal(t,vec3(.34,.50,.64),vec3(.34,.40,.50),vec3(1.,1.,1.),vec3(.58,.78,.92));
+  if(pal==1) return cpal(t,vec3(.40,.24,.60),vec3(.38,.28,.48),vec3(1.,1.,1.),vec3(.70,.72,.88));
+  if(pal==2) return cpal(t,vec3(.14,.60,.58),vec3(.22,.38,.36),vec3(1.,1.,1.),vec3(.50,.72,.92));
+  if(pal==3) return cpal(t,vec3(.24,.34,.72),vec3(.32,.26,.54),vec3(1.,.85,1.),vec3(.60,.68,.95));
+  return         cpal(t,vec3(.67,.77,.89),vec3(.26,.25,.35),vec3(1.,1.,1.),vec3(.55,.76,.88));
 }
-
-// Cor quente: flash de impacto — magenta → laranja
 vec3 warmColor(float t){
-  return cpal(t, vec3(.60,.27,.37), vec3(.48,.36,.26), vec3(1.,.62,.42), vec3(0.,.12,.38));
+  return cpal(t,vec3(.60,.27,.37),vec3(.48,.36,.26),vec3(1.,.62,.42),vec3(0.,.12,.38));
 }
 
 void main(){
   vec2 uv = (gl_FragCoord.xy*2. - u_res) / u_res.y;
 
-  // ── 1. BREATH: escala orgânica ──────────────────────────────────────
-  // Spring com overshoot: quando bass sobe, o visual respira para fora.
-  // O overshoot faz a escala ultrapassar o target e voltar — parece vivo.
-  uv *= 1. + u_breath * 0.60;
+  // Rotação lenta — conduzida por mid acumulado
+  uv = rot2(uv, u_flow*0.25 + u_time*0.015);
 
-  // ── 2. FLOW: rotação por ângulo acumulado ───────────────────────────
-  // u_flow nunca reseta — acumula ao longo da música.
-  // Quando mid é alto, gira mais rápido. Quando a música para, quase para.
-  // u_time*0.02 = baseline mínimo para não ficar completamente parado.
-  uv = rot2(uv, u_flow + u_time * 0.02);
-
-  // ── 3. WARP: distorção de domínio do kick (impulso lento) ───────────
-  // u_warp sobe no kick e decai por ~15 frames — distorção sustentada.
-  // Duas camadas com frequências diferentes = aspecto orgânico.
-  float wt = u_time * 1.85;
+  // Warp de borda no kick — torce o espaço brevemente
+  float wt = u_time*1.6;
   uv += vec2(
-    sin(uv.y * 3.2 + wt      ) * u_warp * 0.58,
-    cos(uv.x * 2.7 + wt*1.32 ) * u_warp * 0.58
-  );
-  uv += vec2(
-    sin(uv.x * 5.1 + uv.y*1.9 + wt*0.50) * u_warp * 0.24,
-    cos(uv.y * 4.2 - uv.x*1.6 + wt*0.72) * u_warp * 0.24
+    sin(uv.y*2.8 + wt      ) * u_warp*0.28,
+    cos(uv.x*2.2 + wt*1.25 ) * u_warp*0.28
   );
 
   float r   = length(uv);
   float ang = atan(uv.y, uv.x);
 
-  // ── 4. PULSE: anéis se expandem no kick ─────────────────────────────
-  // u_pulse desloca a fase dos anéis para fora = onda radial a cada kick.
-  // Decai em ~5 frames: punch seco, não arrasta.
-  float ring0 = sin(r * 8.0  - u_time*2.00 - u_pulse*14.0) * .5 + .5;
-  float ring1 = sin(r * 4.8  - u_time*1.35 - u_pulse* 9.0) * .5 + .5;
-  // Anéis finos: sem pulse — ficam estáveis como referência visual
-  float ring2 = sin(r * 14.0 - u_time*3.60               ) * .5 + .5;
-  // Ripple angular: usa u_flow — ondula junto com a rotação da música
-  float ripple= sin(ang*5.0 + u_flow*3.8 + r*2.1          ) * .5 + .5;
+  // ── BLOB ORGÂNICO ───────────────────────────────────────────────────
+  // Raio base cresce com breath (bass) e pulsa no kick
+  float blobR = 0.30
+    + u_breath * 0.55     // respiração contínua com o bass
+    + u_pulse  * 0.30;    // expansão instantânea no kick
 
-  float pat = ring0*0.44 + ring1*0.28 + ring2*0.10 + ripple*0.18;
+  // Borda orgânica — distorção angular com flowAngle
+  // Faz a forma mudar enquanto a música toca
+  blobR += sin(ang*3. + u_flow*2.0 + u_time*.4) * 0.055;
+  blobR += sin(ang*5. + u_flow*3.5 + u_time*.7) * 0.028;
+  blobR += sin(ang*2. - u_flow*1.2            ) * 0.038;
 
-  // ── 5. COR ──────────────────────────────────────────────────────────
-  float ct   = pat*1.28 + u_colorPhase + u_time*0.038;
-  vec3 cold  = coldColor(ct, u_palette);
-  vec3 warm  = warmColor(ct + 0.36 + u_time*0.03);
+  // SDF: distância signed à borda do blob
+  float d = r - blobR;
 
-  // u_flash mistura quente: snare/kick = flash de cor magenta/laranja
-  // Decai muito rápido (~2-3 frames) = recorte seco, não mancha
-  float heat = clamp(u_flash * 0.92, 0., 0.88);
-  vec3 col   = mix(cold, warm, heat);
+  // ── CAMADAS VISUAIS ─────────────────────────────────────────────────
+  float ct = ang/6.28318 + u_colorPhase + u_time*0.035;
+  vec3 cold = coldColor(ct, u_palette);
+  vec3 warm = warmColor(ct + 0.38 + u_time*0.03);
 
-  // ── 6. CENTER GLOW ──────────────────────────────────────────────────
-  float glo = 0.13 / (r + 0.065);
-  // Glow frio pulsa com breath (bass) e pulse (kick)
-  col += cold * glo * (0.30 + u_breath*0.92 + u_pulse*0.42);
-  // Glow quente flasha no impulso de snare/kick
-  col += warm * glo * u_flash * 0.82;
+  vec3 col = vec3(0.);
 
-  // ── 7. BRILHO TOTAL: pulse ilumina o frame no kick ──────────────────
-  col *= 0.80 + u_pulse*1.10 + u_breath*0.38 + u_flash*0.40;
+  // Preenchimento interno — cor fria sólida
+  float fill = smoothstep(0.015, -0.03, d);
+  col += cold * 0.55 * fill;
 
-  // ── 7b. SNARE: flash branco curto e seco ─────────────────────────────
-  // Recorte de luz inequívoco — diferente do glow quente do kick
-  col = mix(col, vec3(1.), clamp(u_flash*0.50, 0., 0.75));
+  // Glow suave na borda — sempre visível, pulsa com breath
+  float glowSoft  = exp(-abs(d) * 8.0);
+  col += cold * glowSoft * (1.0 + u_breath*2.0 + u_pulse*1.5);
 
-  // ── 8. VIGNETTE ─────────────────────────────────────────────────────
-  col *= smoothstep(1.68, 0.28, r);
+  // Borda nítida — linha fina e brilhante
+  float glowSharp = exp(-abs(d) * 28.0);
+  col += cold * glowSharp * 2.5;
+  col += warm * glowSharp * (u_pulse*2.0 + u_flash*1.5);
 
-  // ── 9. TONEMAPPING ──────────────────────────────────────────────────
-  col = aces(col * 1.72);
+  // Onda de expansão no kick — anel externo que se afasta
+  // Aparece só quando pulse está ativo, some rapidamente
+  float shockD = r - (blobR + u_pulse*0.55);
+  float shock  = exp(-abs(shockD) * 18.0) * u_pulse;
+  col += warm * shock * 2.5;
+
+  // ── FLASH DE SNARE ──────────────────────────────────────────────────
+  // Flash branco que ilumina todo o frame — inconfundível
+  col = mix(col, vec3(1.), clamp(u_flash*0.60, 0., 0.82));
+
+  // ── VIGNETTE ────────────────────────────────────────────────────────
+  col *= smoothstep(1.5, 0.05, r);
+
+  // ── TONEMAPPING ─────────────────────────────────────────────────────
+  col = aces(col * 1.80);
 
   f_color = vec4(col, 1.);
 }`;
