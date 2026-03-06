@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-<title>LUK2 — Lab (Kick Debug)</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<title>LUK2 — Kick Diagnostic</title>
 <style>
   *{margin:0;padding:0;box-sizing:border-box;}
   html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:'Space Mono',monospace;}
@@ -13,152 +12,215 @@
   #startOverlay{
     position:absolute;inset:0;z-index:50;
     display:flex;flex-direction:column;align-items:center;justify-content:center;
-    background:#000;transition:opacity .5s ease;
+    background:#000;transition:opacity .4s;
   }
   #startOverlay.hidden{opacity:0;pointer-events:none;}
-  .start-brand{font-family:'Syne',sans-serif;font-size:56px;font-weight:800;letter-spacing:4px;color:#fff;margin-bottom:6px;}
-  .start-sub{font-size:11px;letter-spacing:4px;color:rgba(255,255,255,.35);text-transform:uppercase;margin-bottom:48px;}
+  #startOverlay h1{color:#fff;font-size:28px;letter-spacing:4px;margin-bottom:8px;}
+  #startOverlay p{color:rgba(255,255,255,.3);font-size:11px;letter-spacing:2px;margin-bottom:40px;}
   .start-btn{
-    padding:16px 48px;border-radius:100px;border:1px solid rgba(255,255,255,.3);
-    background:transparent;color:#fff;font-family:'Syne',sans-serif;font-size:15px;
-    font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .2s ease;}
-  .start-btn:hover{background:rgba(255,255,255,.08);}
-  .start-note{margin-top:24px;color:rgba(255,255,255,.18);font-size:11px;letter-spacing:1px;text-align:center;}
+    padding:14px 40px;border-radius:6px;border:1px solid rgba(255,255,255,.3);
+    background:transparent;color:#fff;font-family:'Space Mono',monospace;
+    font-size:13px;letter-spacing:2px;cursor:pointer;}
+  .start-btn:hover{background:rgba(255,255,255,.06);}
   .file-drop-area{
-    margin-top:14px;padding:10px 24px;border:1px dashed rgba(255,255,255,.22);border-radius:10px;
-    color:rgba(255,255,255,.55);font-size:11px;letter-spacing:1px;cursor:pointer;
-    transition:all .2s;text-align:center;background:rgba(255,255,255,.03);}
-  .file-drop-area:hover{border-color:rgba(255,255,255,.45);}
+    margin-top:16px;padding:10px 24px;border:1px dashed rgba(255,255,255,.18);
+    border-radius:6px;color:rgba(255,255,255,.4);font-size:11px;
+    letter-spacing:1px;cursor:pointer;text-align:center;}
   #fileInput{display:none;}
 
-  /* HUD minimalista */
-  #hud{
-    position:absolute;top:0;left:0;right:0;z-index:20;padding:16px 20px;
-    display:flex;align-items:center;justify-content:space-between;pointer-events:none;}
-  .hud-brand{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;letter-spacing:3px;color:rgba(255,255,255,.5);}
-  .hud-tag{font-size:9px;color:rgba(255,255,255,.2);letter-spacing:3px;margin-top:2px;}
-  .bpm-display{font-family:'Space Mono',monospace;font-size:24px;font-weight:700;color:rgba(255,255,255,.5);text-align:right;}
-  .bpm-label{font-size:9px;color:rgba(255,255,255,.2);letter-spacing:2px;margin-top:2px;text-align:right;}
-
-  /* Track info mínimo no rodapé */
-  #footer{
-    position:absolute;bottom:0;left:0;right:0;z-index:20;padding:16px 20px;
-    display:flex;align-items:center;justify-content:space-between;}
-  .track-info{display:flex;align-items:center;gap:8px;}
-  .track-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.4);animation:pdot 1.2s ease-in-out infinite;}
-  @keyframes pdot{0%,100%{opacity:1;}50%{opacity:.25;}}
-  .track-dot.paused{animation:none;background:rgba(255,255,255,.15);}
-  .track-name{font-size:10px;color:rgba(255,255,255,.28);letter-spacing:1px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .bars{display:flex;align-items:flex-end;gap:2px;height:28px;}
-  .bar{width:4px;border-radius:2px;background:rgba(255,255,255,.25);min-height:2px;transition:height .04s ease;}
-
-  #idleMsg{
-    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-    z-index:25;pointer-events:auto;
-    background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);
-    border-radius:100px;padding:12px 28px;
-    font-size:13px;letter-spacing:2px;color:rgba(255,255,255,.55);
-    white-space:nowrap;cursor:pointer;transition:opacity .8s;}
-  #idleMsg.hidden{opacity:0;pointer-events:none;}
-
   #loadingMsg{position:absolute;inset:0;z-index:60;display:none;align-items:center;
-    justify-content:center;background:#000;flex-direction:column;gap:14px;}
+    justify-content:center;background:#000;}
   #loadingMsg.show{display:flex;}
-  .loading-spinner{width:32px;height:32px;border:2px solid rgba(255,255,255,.06);
-    border-top-color:rgba(255,255,255,.5);border-radius:50%;animation:spin .8s linear infinite;}
-  @keyframes spin{to{transform:rotate(360deg);}}
-  .loading-text{color:rgba(255,255,255,.25);font-size:11px;letter-spacing:2px;}
+  .loading-text{color:rgba(255,255,255,.3);font-size:11px;letter-spacing:3px;}
 </style>
 </head>
 <body>
-
-<!-- Canvas 2D — renderização minimalista -->
 <canvas id="c"></canvas>
 
-<div id="hud">
-  <div><div class="hud-brand">LUK2</div><div class="hud-tag">Kick Debug</div></div>
-  <div><div class="bpm-display" id="bpmDisplay">---</div><div class="bpm-label">BPM</div></div>
-</div>
-
-<div id="footer">
-  <div class="track-info">
-    <div class="track-dot paused" id="trackDot"></div>
-    <div class="track-name" id="trackName">demo.mp3</div>
-  </div>
-  <div class="bars">
-    <div class="bar" id="b1"></div><div class="bar" id="b2"></div>
-    <div class="bar" id="b3"></div><div class="bar" id="b4"></div>
-    <div class="bar" id="b5"></div><div class="bar" id="b6"></div>
-    <div class="bar" id="b7"></div><div class="bar" id="b8"></div>
-  </div>
-</div>
-
-<div id="idleMsg">▶ coloque sua música para começar</div>
-
 <div id="startOverlay">
-  <div class="start-brand">LUK2</div>
-  <div class="start-sub">Kick Debug</div>
-  <button class="start-btn" id="startBtn"><span>▶&nbsp;&nbsp;INICIAR</span></button>
-  <div class="start-note">ou escolha sua própria música</div>
+  <h1>KICK DIAGNOSTIC</h1>
+  <p>LUK2 — ferramenta de diagnóstico de kick detection</p>
+  <button class="start-btn" id="startBtn">▶ INICIAR DEMO</button>
   <div class="file-drop-area" id="fileDropArea">
-    arraste um arquivo de áudio aqui<br>
-    <span style="color:rgba(255,255,255,.3);">mp3 · wav · ogg · flac</span>
+    ou arraste seu áudio aqui (mp3 · wav · ogg)
     <input type="file" id="fileInput" accept="audio/*">
   </div>
 </div>
 
-<div id="loadingMsg">
-  <div class="loading-spinner"></div>
-  <div class="loading-text">Carregando…</div>
-</div>
+<div id="loadingMsg"><div class="loading-text">CARREGANDO…</div></div>
 
 <script>
 // ═══════════════════════════════════════════════════════════════════
-//  RENDERIZAÇÃO — 2D canvas, sem shader
-//
-//  Lógica:
-//  - fundo sempre preto
-//  - no frame em que kickFired=true → kickAlpha = 1.0
-//  - cada frame: kickAlpha decai linearmente pelo tempo
-//  - enquanto kickAlpha > 0 → desenha círculo branco sólido no centro
-//  - círculo desaparece em KICK_DURATION ms (80–120ms)
+//  CANVAS 2D — diagnostic renderer
 // ═══════════════════════════════════════════════════════════════════
 const canvas = document.getElementById('c');
 const ctx    = canvas.getContext('2d');
 
-function resize(){
-  canvas.width  = window.innerWidth;
-  canvas.height = window.innerHeight;
-}
-resize();
-window.addEventListener('resize', resize);
+function resize(){ canvas.width = innerWidth; canvas.height = innerHeight; }
+resize(); window.addEventListener('resize', resize);
 
-const KICK_DURATION = 100; // ms — duração do círculo branco
-let   kickTime      = -999; // timestamp do último kick detectado
+// Variáveis de diagnóstico — preenchidas por processAudio()
+// Expostas globalmente para o renderer ler
+let diagKickBand  = 0;   // bandRMS(60,120) — nível da banda de kick
+let diagFlux      = 0;   // fluxSmooth atual
+let diagThreshold = 0;   // threshold calculado neste frame
+let diagTrigger   = false; // true apenas no frame em que kick foi detectado
 
-function drawFrame(){
+// Peak trackers para normalizar as barras
+let peakKickBand  = 0.01;
+let peakFlux      = 0.01;
+let peakThreshold = 0.01;
+
+// Flash state
+const FLASH_MS = 80;
+let   kickTime = -9999;
+
+function drawDiag(){
   const W = canvas.width, H = canvas.height;
+  const now = performance.now();
 
-  // Fundo preto sólido
+  // ── Fundo ──────────────────────────────────────────────────────
   ctx.fillStyle = '#000';
   ctx.fillRect(0, 0, W, H);
 
-  // Círculo branco — aparece no kick e desaparece em KICK_DURATION ms
-  const elapsed = performance.now() - kickTime;
-  if(elapsed < KICK_DURATION){
-    const alpha  = 1 - elapsed / KICK_DURATION; // linear: 1.0 → 0.0
-    const radius = Math.min(W, H) * 0.22;       // 22% da menor dimensão
-
-    ctx.beginPath();
-    ctx.arc(W/2, H/2, radius, 0, Math.PI*2);
-    ctx.fillStyle = `rgba(255,255,255,${alpha.toFixed(3)})`;
-    ctx.fill();
+  // ── Flash branco no kick ────────────────────────────────────────
+  const elapsed = now - kickTime;
+  if(elapsed < FLASH_MS){
+    const a = (1 - elapsed / FLASH_MS) * 0.92;
+    ctx.fillStyle = `rgba(255,255,255,${a.toFixed(3)})`;
+    ctx.fillRect(0, 0, W, H);
   }
+
+  // ── Texto KICK ──────────────────────────────────────────────────
+  if(elapsed < 300){
+    const a = Math.max(0, 1 - elapsed / 300);
+    ctx.save();
+    ctx.globalAlpha = a;
+    ctx.fillStyle   = '#fff';
+    ctx.font        = `bold ${Math.round(H * 0.12)}px 'Space Mono', monospace`;
+    ctx.textAlign   = 'center';
+    ctx.textBaseline= 'middle';
+    ctx.fillText('KICK', W/2, H/2);
+    ctx.restore();
+  }
+
+  // ── Painel de diagnóstico ───────────────────────────────────────
+  // 4 métricas em texto + barra horizontal
+  // Posição: canto superior esquerdo, compacto, sem estética
+  const PAD  = 20;
+  const LH   = 36;        // altura de cada linha
+  const BH   = 14;        // altura da barra
+  const BW   = Math.min(W * 0.38, 340); // largura máxima da barra
+  const LPAD = 180;       // largura da coluna de label + valor
+
+  // Atualiza picos para escala das barras
+  peakKickBand  = Math.max(peakKickBand  * 0.998, diagKickBand);
+  peakFlux      = Math.max(peakFlux      * 0.998, diagFlux);
+  peakThreshold = Math.max(peakThreshold * 0.998, diagThreshold);
+
+  const metrics = [
+    {
+      label : 'KICK BAND',
+      sub   : '60–120 Hz',
+      value : diagKickBand,
+      peak  : peakKickBand,
+      color : '#00e5ff',
+      fmt   : v => v.toFixed(3),
+    },
+    {
+      label : 'FLUX',
+      sub   : 'spectral flux',
+      value : diagFlux,
+      peak  : peakFlux,
+      color : '#ffcc00',
+      fmt   : v => v.toFixed(4),
+    },
+    {
+      label : 'THRESHOLD',
+      sub   : 'limite atual',
+      value : diagThreshold,
+      peak  : peakThreshold,
+      color : '#ff6644',
+      fmt   : v => v.toFixed(4),
+    },
+    {
+      label : 'TRIGGER',
+      sub   : diagTrigger ? 'DISPAROU' : 'aguardando',
+      value : diagTrigger ? 1 : 0,
+      peak  : 1,
+      color : diagTrigger ? '#00ff88' : '#333',
+      fmt   : () => diagTrigger ? 'ON' : 'OFF',
+    },
+  ];
+
+  ctx.save();
+  ctx.globalAlpha = 0.95;
+
+  metrics.forEach((m, i) => {
+    const X = PAD;
+    const Y = PAD + i * LH * 1.5;
+
+    // Label
+    ctx.fillStyle    = 'rgba(255,255,255,0.35)';
+    ctx.font         = '10px Space Mono, monospace';
+    ctx.textAlign    = 'left';
+    ctx.textBaseline = 'top';
+    ctx.fillText(`${m.label}  (${m.sub})`, X, Y);
+
+    // Valor numérico
+    ctx.fillStyle = m.color;
+    ctx.font      = 'bold 13px Space Mono, monospace';
+    ctx.fillText(m.fmt(m.value), X + LPAD, Y);
+
+    // Barra de fundo
+    const barY = Y + 16;
+    ctx.fillStyle = 'rgba(255,255,255,0.07)';
+    ctx.fillRect(X, barY, BW, BH);
+
+    // Barra de valor
+    const ratio = m.peak > 0 ? Math.min(m.value / m.peak, 1) : 0;
+    ctx.fillStyle = m.color;
+    ctx.fillRect(X, barY, BW * ratio, BH);
+
+    // Linha de threshold sobre a barra de FLUX
+    // Mostra visualmente onde está o threshold em relação ao flux
+    if(m.label === 'FLUX' && peakFlux > 0){
+      const tx = X + BW * Math.min(diagThreshold / peakFlux, 1);
+      ctx.strokeStyle = '#ff6644';
+      ctx.lineWidth   = 2;
+      ctx.beginPath();
+      ctx.moveTo(tx, barY - 2);
+      ctx.lineTo(tx, barY + BH + 2);
+      ctx.stroke();
+    }
+  });
+
+  // Legenda da linha vermelha
+  const legendY = PAD + 1 * LH * 1.5 + 16 + BH + 6;
+  ctx.fillStyle = 'rgba(255,100,68,0.6)';
+  ctx.font      = '9px Space Mono, monospace';
+  ctx.fillText('▲ threshold', PAD, legendY);
+
+  // BPM
+  const bpmStr = bpm > 0 ? `${bpm} BPM` : '--- BPM';
+  ctx.fillStyle    = 'rgba(255,255,255,0.20)';
+  ctx.font         = '11px Space Mono, monospace';
+  ctx.textAlign    = 'right';
+  ctx.textBaseline = 'top';
+  ctx.fillText(bpmStr, W - PAD, PAD);
+
+  // Nome do arquivo
+  ctx.fillStyle = 'rgba(255,255,255,0.15)';
+  ctx.font      = '10px Space Mono, monospace';
+  ctx.fillText(trackLabel, W - PAD, PAD + 18);
+
+  ctx.restore();
 }
 
 
 // ═══════════════════════════════════════════════════════════════════
 //  ÁUDIO — pipeline intacta, sem alterações
+//  Apenas expõe variáveis de diagnóstico para o renderer
 // ═══════════════════════════════════════════════════════════════════
 let audioCtx, analyser, sourceNode, audioBuffer;
 const FFT = 512;
@@ -180,7 +242,7 @@ async function loadURL(url){
     const r = await fetch(url); if(!r.ok) throw 0;
     audioBuffer = await audioCtx.decodeAudioData(await r.arrayBuffer());
     showLoading(false); startPlayback();
-    document.getElementById('trackName').textContent = url.split('/').pop();
+    trackLabel = url.split('/').pop();
     return true;
   } catch { showLoading(false); return false; }
 }
@@ -189,7 +251,7 @@ async function loadFile(file){
   try{
     audioBuffer = await audioCtx.decodeAudioData(await file.arrayBuffer());
     showLoading(false); startPlayback();
-    document.getElementById('trackName').textContent = file.name;
+    trackLabel = file.name;
   } catch { showLoading(false); }
 }
 function startPlayback(){
@@ -197,29 +259,19 @@ function startPlayback(){
   sourceNode = audioCtx.createBufferSource();
   sourceNode.buffer = audioBuffer; sourceNode.loop = true;
   sourceNode.connect(analyser); sourceNode.start(0);
-  document.getElementById('trackDot').classList.remove('paused');
   bTimes.length = 0; bpm = 0; bassI0 = -1; bassI1 = -1;
   isPlaying = true;
-  document.getElementById('idleMsg').classList.add('hidden');
 }
 
 function bandRMS(lo, hi){
   if(!analyser || !freqData) return 0;
   const bin = audioCtx.sampleRate / FFT;
-  const i0 = Math.max(0, Math.floor(lo/bin));
-  const i1 = Math.min(freqData.length-1, Math.floor(hi/bin));
+  const i0  = Math.max(0, Math.floor(lo/bin));
+  const i1  = Math.min(freqData.length-1, Math.floor(hi/bin));
   if(i1 < i0) return 0;
   let s = 0;
   for(let i=i0; i<=i1; i++){ const v=freqData[i]/255; s+=v*v; }
   return Math.sqrt(s/(i1-i0+1));
-}
-function band(lo, hi){
-  if(!analyser || !freqData) return 0;
-  const bin = audioCtx.sampleRate / FFT;
-  const i0 = Math.max(0, Math.floor(lo/bin));
-  const i1 = Math.min(freqData.length-1, Math.floor(hi/bin));
-  let s = 0; for(let i=i0; i<=i1; i++) s += freqData[i]/255;
-  return i1>=i0 ? s/(i1-i0+1) : 0;
 }
 
 // Spectral Flux — kick detection (sem alterações)
@@ -230,7 +282,6 @@ const BEAT_SENS=1.1, COOL_FRAMES=8;
 let beatCool=0, bpm=0;
 const bTimes=[];
 let bassI0=-1, bassI1=-1;
-let kickFired=false, kickMag=0;
 
 function processAudio(){
   if(!analyser || !freqData) return;
@@ -242,8 +293,13 @@ function processAudio(){
     bassI1 = Math.min(freqData.length-1, Math.floor(140/bin));
   }
 
-  const rawBass = bandRMS(20, 140);
+  const rawBass    = bandRMS(20,  140);
+  const rawKickBand= bandRMS(60,  120);  // banda específica do kick
 
+  // Expõe nível da banda de kick para o renderer
+  diagKickBand = rawKickBand;
+
+  // Spectral flux
   let flux = 0;
   if(prevFFT !== null){
     for(let i=bassI0; i<=bassI1; i++){
@@ -265,13 +321,16 @@ function processAudio(){
   const threshold = Math.max(avg + variance*BEAT_SENS, avg*1.2);
   const bN = rawBass / (Math.max(rawBass*0.1, 0.01));
 
-  kickFired = false;
+  // Expõe flux e threshold para o renderer
+  diagFlux      = flux;
+  diagThreshold = threshold;
+  diagTrigger   = false;
+
   if(beatCool > 0){ beatCool--; }
   else if(flux > threshold && bN > 0.08 && flux >= fluxPeak*0.95){
-    kickFired = true;
-    kickMag   = Math.min(rawBass * 3.0, 1.0);
-    kickTime  = performance.now(); // registra o momento exato
-    beatCool  = COOL_FRAMES;
+    diagTrigger = true;
+    kickTime    = performance.now();
+    beatCool    = COOL_FRAMES;
 
     const now = performance.now(); bTimes.push(now);
     if(bTimes.length > 8) bTimes.shift();
@@ -284,26 +343,16 @@ function processAudio(){
 }
 
 
-// ═══════════════════════════════════════════════════════════════════
-//  RENDER LOOP
-// ═══════════════════════════════════════════════════════════════════
+// ── Estado ──────────────────────────────────────────────────────────
 let isPlaying = false;
-const barIds    = ['b1','b2','b3','b4','b5','b6','b7','b8'];
-const barRanges = [[20,60],[60,120],[120,250],[250,500],[500,1000],[1000,2500],[2500,6000],[6000,16000]];
+let trackLabel = '';
 
+// ── Render loop ─────────────────────────────────────────────────────
 function render(){
   requestAnimationFrame(render);
-
   if(isPlaying) processAudio();
-
-  // HUD
-  document.getElementById('bpmDisplay').textContent = bpm > 0 ? bpm : '---';
-  if(analyser && freqData)
-    barRanges.forEach((r,i) =>
-      document.getElementById(barIds[i]).style.height = Math.max(2, band(r[0],r[1])*120)+'px');
-
-  // Desenho — preto + círculo no kick
-  drawFrame();
+  else { diagKickBand=0; diagFlux=0; diagThreshold=0; diagTrigger=false; }
+  drawDiag();
 }
 requestAnimationFrame(render);
 
@@ -317,37 +366,31 @@ document.getElementById('startBtn').addEventListener('click', async () => {
     const osc = audioCtx.createOscillator(), g = audioCtx.createGain();
     osc.frequency.value = 80; g.gain.value = 0.04;
     osc.connect(g); g.connect(analyser); osc.start();
-    document.getElementById('trackName').textContent = 'demo.mp3 não encontrado';
-    document.getElementById('trackDot').classList.remove('paused');
-    isPlaying = true;
-    document.getElementById('idleMsg').classList.add('hidden');
+    trackLabel = 'sem arquivo — oscilador';
+    isPlaying  = true;
   }
   const ol = document.getElementById('startOverlay');
-  ol.classList.add('hidden'); setTimeout(() => ol.style.display='none', 550);
+  ol.classList.add('hidden'); setTimeout(() => ol.style.display='none', 450);
 });
 
-document.getElementById('idleMsg').addEventListener('click',
+document.getElementById('fileDropArea').addEventListener('click',
   () => document.getElementById('fileInput').click());
-
-const fda = document.getElementById('fileDropArea');
-const fi  = document.getElementById('fileInput');
-fda.addEventListener('click', () => fi.click());
-fi.addEventListener('change', async e => {
+document.getElementById('fileInput').addEventListener('change', async e => {
   const f = e.target.files[0]; if(!f) return;
   if(!audioCtx){ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); setupAnalyser(); }
   await loadFile(f);
   const ol = document.getElementById('startOverlay');
-  ol.classList.add('hidden'); setTimeout(() => ol.style.display='none', 550);
+  ol.classList.add('hidden'); setTimeout(() => ol.style.display='none', 450);
 });
-fda.addEventListener('dragover',  e => { e.preventDefault(); fda.style.borderColor='rgba(255,255,255,.5)'; });
-fda.addEventListener('dragleave', ()  => { fda.style.borderColor='rgba(255,255,255,.22)'; });
-fda.addEventListener('drop', async e => {
-  e.preventDefault(); fda.style.borderColor='rgba(255,255,255,.22)';
+document.getElementById('fileDropArea').addEventListener('dragover',
+  e => { e.preventDefault(); });
+document.getElementById('fileDropArea').addEventListener('drop', async e => {
+  e.preventDefault();
   const f = e.dataTransfer.files[0]; if(!f || !f.type.startsWith('audio/')) return;
   if(!audioCtx){ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); setupAnalyser(); }
   await loadFile(f);
   const ol = document.getElementById('startOverlay');
-  ol.classList.add('hidden'); setTimeout(() => ol.style.display='none', 550);
+  ol.classList.add('hidden'); setTimeout(() => ol.style.display='none', 450);
 });
 
 function showLoading(v){ document.getElementById('loadingMsg').classList.toggle('show', v); }
