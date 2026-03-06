@@ -394,7 +394,7 @@ vec3 modePlasma(vec2 u0){
 void main(){
   vec2 uv=(gl_FragCoord.xy*2.-u_res)/u_res.y;
   // reações ao beat — zoom, kick, snare
-  uv*=1.-u_bass*.18-u_kick*.18-u_snare*.08-u_beat*.12;
+  uv*=1.-u_beat*.10-u_bass*.12-u_kick*.11-u_snare*.05;
   uv+=uv*u_snare*.07*sin(u_time*18.+uv.x*10.);
   uv+=uv*u_high*.02*sin(u_time*25.+uv.y*6.);
 
