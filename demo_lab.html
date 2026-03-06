@@ -178,18 +178,34 @@ function drawDiag(){
   ctx.fillText('CONDIÇÕES DO TRIGGER:', PAD, condY);
 
   const conds = [
-    { label: 'flux > threshold',   ok: diagCond1 },
-    { label: 'bN > 0.08',          ok: diagCond2 },
-    { label: 'flux ≥ peak×0.95',   ok: diagCond3 },
+    {
+      label : 'flux > threshold',
+      ok    : diagCond1,
+      detail: `${diagFlux.toFixed(5)}  >  ${diagThreshold.toFixed(5)}`,
+    },
+    {
+      label : 'bN > 0.08',
+      ok    : diagCond2,
+      detail: `bN = ${diagBN.toFixed(3)}`,
+    },
+    {
+      label : 'flux >= peak×0.95',
+      ok    : diagCond3,
+      detail: `${diagFlux.toFixed(5)}  >=  ${(diagFluxPeak*0.95).toFixed(5)}  (peak=${diagFluxPeak.toFixed(5)})`,
+    },
   ];
   conds.forEach((c, i) => {
-    const cy = condY + 18 + i * 20;
+    const cy = condY + 18 + i * 26;
     ctx.fillStyle = c.ok ? '#00ff88' : '#ff3333';
-    ctx.font      = 'bold 11px Space Mono, monospace';
+    ctx.font      = 'bold 13px Space Mono, monospace';
     ctx.fillText(c.ok ? '✓' : '✗', PAD, cy);
-    ctx.fillStyle = c.ok ? 'rgba(255,255,255,0.6)' : 'rgba(255,80,80,0.7)';
+    ctx.fillStyle = c.ok ? 'rgba(255,255,255,0.7)' : 'rgba(255,80,80,0.85)';
     ctx.font      = '11px Space Mono, monospace';
-    ctx.fillText(c.label, PAD + 20, cy);
+    ctx.fillText(c.label, PAD + 22, cy);
+    // Valores reais da comparação
+    ctx.fillStyle = 'rgba(255,255,255,0.28)';
+    ctx.font      = '9px Space Mono, monospace';
+    ctx.fillText(c.detail, PAD + 22, cy + 13);
   });
 
   // ── Seção 3: trigger indicator ──────────────────────────────────
