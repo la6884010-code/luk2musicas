@@ -393,8 +393,13 @@ vec3 modePlasma(vec2 u0){
 
 void main(){
   vec2 uv=(gl_FragCoord.xy*2.-u_res)/u_res.y;
-  // reações ao beat — zoom, kick, snare
-  uv*=1.-u_beat*.14-u_bass*.10-u_kick*.20-u_snare*.07;
+  // ── Camada 1: Groove (bass) — respiração contínua ────────────
+  uv*=1.+u_bass*0.12;
+  uv=rot2(uv,u_bass*0.4);
+  // ── Camada 2: Movimento musical (mid) — fluxo rítmico ────────
+  uv+=uv*u_mid*0.05*sin(u_time*2.0);
+  // ── Camada 3: Impacto (beat/kick) ────────────────────────────
+  uv*=1.-u_beat*.14-u_kick*.20-u_snare*.07;
   uv+=uv*u_snare*.07*sin(u_time*18.+uv.x*10.);
   uv+=uv*u_high*.02*sin(u_time*25.+uv.y*6.);
 
