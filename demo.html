@@ -451,6 +451,7 @@ function play(){
   // reset BPM e índices de banda ao trocar música
   bTimes.length=0;bpm=0;
   bassI0=-1;bassI1=-1;
+  isPlaying=true;startT=null;
 }
 
 // ── Análise de banda — RMS igual ao Python ────
@@ -542,6 +543,7 @@ function processAudio(){
 
 // ── Estado ───────────────────────────────────
 let mode=0,palette=1,colorOffset=0,colorOffV=0;
+let isPlaying=false;
 
 // ── Render Loop ──────────────────────────────
 let startT=null;
@@ -553,8 +555,9 @@ function render(ts){
   if(!startT)startT=ts;
   // Compensa latência de saída do browser (outputLatency + baseLatency)
   const latency = audioCtx ? (audioCtx.outputLatency||0)+(audioCtx.baseLatency||0) : 0;
-  const t=(ts-startT)/1000 + latency;
-  processAudio();
+  const t=isPlaying ? (ts-startT)/1000+latency : 0;
+  if(isPlaying) processAudio();
+  else{ sBass=sMid=sHigh=sKick=sSnare=sAudio=beatFlash=0; }
   if(beatFlash>.6)colorOffV+=beatFlash*.14;
   colorOffV*=.88;colorOffset+=colorOffV;
   document.getElementById('bpmDisplay').textContent=bpm>0?bpm:'---';
