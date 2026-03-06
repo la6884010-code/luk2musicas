@@ -3,215 +3,288 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-<title>LUK2 — Kick Diagnostic</title>
+<title>LUK2 — Lab</title>
 <style>
   *{margin:0;padding:0;box-sizing:border-box;}
   html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:'Space Mono',monospace;}
   canvas{display:block;width:100%;height:100%;position:absolute;top:0;left:0;}
-
-  #startOverlay{
-    position:absolute;inset:0;z-index:50;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;
-    background:#000;transition:opacity .4s;
-  }
-  #startOverlay.hidden{opacity:0;pointer-events:none;}
-  #startOverlay h1{color:#fff;font-size:28px;letter-spacing:4px;margin-bottom:8px;}
-  #startOverlay p{color:rgba(255,255,255,.3);font-size:11px;letter-spacing:2px;margin-bottom:40px;}
-  .start-btn{
-    padding:14px 40px;border-radius:6px;border:1px solid rgba(255,255,255,.3);
+  #ui{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;
+      align-items:center;justify-content:center;background:#000;transition:opacity .4s;}
+  #ui.hidden{opacity:0;pointer-events:none;}
+  #ui h2{color:rgba(255,255,255,.4);font-size:12px;letter-spacing:3px;margin-bottom:32px;}
+  .btn{padding:12px 36px;border:1px solid rgba(255,255,255,.2);border-radius:4px;
     background:transparent;color:#fff;font-family:'Space Mono',monospace;
-    font-size:13px;letter-spacing:2px;cursor:pointer;}
-  .start-btn:hover{background:rgba(255,255,255,.06);}
-  .file-drop-area{
-    margin-top:16px;padding:10px 24px;border:1px dashed rgba(255,255,255,.18);
-    border-radius:6px;color:rgba(255,255,255,.4);font-size:11px;
-    letter-spacing:1px;cursor:pointer;text-align:center;}
-  #fileInput{display:none;}
-
-  #loadingMsg{position:absolute;inset:0;z-index:60;display:none;align-items:center;
-    justify-content:center;background:#000;}
-  #loadingMsg.show{display:flex;}
-  .loading-text{color:rgba(255,255,255,.3);font-size:11px;letter-spacing:3px;}
+    font-size:12px;letter-spacing:2px;cursor:pointer;margin:6px;}
+  .btn:hover{background:rgba(255,255,255,.06);}
+  .drop{margin-top:16px;padding:10px 24px;border:1px dashed rgba(255,255,255,.12);
+    border-radius:4px;color:rgba(255,255,255,.3);font-size:11px;letter-spacing:1px;
+    cursor:pointer;text-align:center;}
+  #fi{display:none;}
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
 
-<div id="startOverlay">
-  <h1>KICK DIAGNOSTIC</h1>
-  <p>LUK2 — ferramenta de diagnóstico de kick detection</p>
-  <button class="start-btn" id="startBtn">▶ INICIAR DEMO</button>
-  <div class="file-drop-area" id="fileDropArea">
-    ou arraste seu áudio aqui (mp3 · wav · ogg)
-    <input type="file" id="fileInput" accept="audio/*">
+<div id="ui">
+  <h2>LUK2 — LAB</h2>
+  <button class="btn" id="startBtn">▶ DEMO.MP3</button>
+  <div class="drop" id="drop">
+    arraste seu áudio aqui
+    <input type="file" id="fi" accept="audio/*">
   </div>
 </div>
 
-<div id="loadingMsg"><div class="loading-text">CARREGANDO…</div></div>
-
 <script>
-// ═══════════════════════════════════════════════════════════════════
-//  CANVAS 2D — diagnostic renderer
-// ═══════════════════════════════════════════════════════════════════
+// ─────────────────────────────────────────────────────────
+//  CANVAS
+// ─────────────────────────────────────────────────────────
 const canvas = document.getElementById('c');
 const ctx    = canvas.getContext('2d');
-
 function resize(){ canvas.width = innerWidth; canvas.height = innerHeight; }
 resize(); window.addEventListener('resize', resize);
 
-// Variáveis de diagnóstico — preenchidas por processAudio()
-// Expostas globalmente para o renderer ler
-let diagKickBand  = 0;     // bandRMS(60,120) — nível da banda de kick
-let diagFlux      = 0;     // fluxSmooth atual
-let diagThreshold = 0;     // threshold calculado neste frame
-let diagFluxPeak  = 0;     // fluxPeak atual (linha de referência de pico)
-let diagBN        = 0;     // bN — normalização de bass
-let diagTrigger   = false; // true apenas no frame em que kick foi detectado
-// Sub-condições do trigger (para diagnóstico)
-let diagCond1     = false; // flux > threshold
-let diagCond2     = false; // bN > 0.08
-let diagCond3     = false; // flux >= fluxPeak * 0.95
+// ─────────────────────────────────────────────────────────
+//  CONFIGURAÇÃO DOS ANÉIS
+// ─────────────────────────────────────────────────────────
+const N_RINGS = 6;
 
-// Peak trackers para normalizar as barras
-let peakKickBand  = 0.01;
-let peakFlux      = 0.01;
-let peakThreshold = 0.01;
+// Raios base como fração de S (menor lado)
+const RING_RADII = [0.07, 0.13, 0.20, 0.28, 0.37, 0.47];
 
-// Flash state
-const FLASH_MS = 80;
-let   kickTime = -9999;
+// Cores alternando ciano e magenta
+const RING_COLORS = [
+  '0,255,255',    // ciano
+  '255,0,255',    // magenta
+  '0,255,255',
+  '255,0,255',
+  '0,255,255',
+  '255,0,255',
+];
 
-function drawDiag(){
-  const W = canvas.width, H = canvas.height;
-  const now = performance.now();
+// Delay em frames para o ripple (3 frames entre cada anel)
+const RING_DELAY = [0, 3, 6, 9, 12, 15];
 
-  // ── Fundo ──────────────────────────────────────────────────────
+// Magnitude do impulso crescente para fora
+const RING_MAG = [1.2, 1.6, 2.0, 2.5, 3.2, 4.0];
+
+// ─────────────────────────────────────────────────────────
+//  MOTION STATE
+// ─────────────────────────────────────────────────────────
+const ringVel = new Float32Array(N_RINGS);
+const ringPos = new Float32Array(N_RINGS);
+
+// Trail por anel
+const trailR = new Float32Array(N_RINGS);  // raio atual do trail (fração de S)
+const trailA = new Float32Array(N_RINGS);  // opacidade do trail
+
+// Fila de kicks pendentes por anel
+const pendingKicks = Array.from({length: N_RINGS}, () => []);
+
+// Breath — bass (anel 1 em diante)
+let breathPos = 0;
+let breathVel = 0;
+
+// Wave — mid (anel 0: guitarra/voz/piano)
+let wavePhase = 0;
+let waveAmp   = 0;
+
+let _spawnSmokeOnKick = false;
+
+// ── Física validada — calculada sempre, renderizada quando reativada ──
+let pulseVel   = 0;   // PULSO validado
+let pulsePos   = 0;
+let warpAmount = 0;   // WARP validado
+let flowVel    = 0;   // FLOW validado
+let flowAngle  = 0;
+
+// Flash (calculado, não desenhado ainda)
+let flashAlpha   = 0;
+let glowStrength = 0;
+let trailRadius  = 0;
+let trailAlpha   = 0;
+
+// Memória dos pulsos — fantasmas em ciano
+const GHOST_ALPHAS = [0.70, 0.40, 0.15];
+const ghostData = [];  // { pos, alpha }
+
+// ─── Partículas de fumaça neon ───────────────────────────
+const smoke = [];   // { x, y, vx, vy, size, alpha, decay, hue }
+
+function spawnSmoke(cx, cy, S){
+  const breathScale = 1.0 + breathPos * 0.10;
+  const baseR = S * RING_RADII[1] * breathScale;
+  const N = 28;
+
+  for(let i = 0; i < N; i++){
+    const angle  = (i / N) * TWO_PI + (Math.random() - 0.5) * 0.4;
+    const jitter = (Math.random() - 0.5) * S * 0.018;
+    const r      = baseR + jitter;
+    const x      = cx + Math.cos(angle) * r;
+    const y      = cy + Math.sin(angle) * r;
+
+    // velocidade: para fora com deriva angular aleatória
+    const speed = (0.4 + Math.random() * 0.8) * S * 0.0014;
+    const drift = (Math.random() - 0.5) * 0.35;
+
+    smoke.push({
+      x, y,
+      vx:    Math.cos(angle + drift) * speed,
+      vy:    Math.sin(angle + drift) * speed,
+      size:  2 + Math.random() * 4,
+      alpha: 0.18 + Math.random() * 0.15,
+      decay: 0.030 + Math.random() * 0.022,
+      cyan:  Math.random() > 0.5,
+    });
+  }
+}
+
+function applyKickImpulse(mag){
+  flashAlpha   = 1.0;
+  glowStrength = 1.0;
+  trailRadius  = RING_RADII[1];
+  trailAlpha   = 0.70;
+  // Guarda posição atual como novo fantasma
+  ghostData.unshift({ pos: ringPos[1], alpha: GHOST_ALPHAS[0] });
+  if(ghostData.length > 3) ghostData.pop();
+  // Redefine alpha de cada slot pelo índice
+  for(let i = 0; i < ghostData.length; i++) ghostData[i].alpha = GHOST_ALPHAS[i];
+  pulseVel    += mag * 4.0;
+  warpAmount   = 1.0;
+  // Cascata começa do anel 1 — anel 0 só respira com mid
+  for(let i = 1; i < N_RINGS; i++){
+    pendingKicks[i].push({ framesLeft: RING_DELAY[i], mag: mag * RING_MAG[i] });
+  }
+  // Fumaça nasce no primeiro anel da cascata (anel 1)
+  _spawnSmokeOnKick = true;
+}
+
+function stepPhysics(rawBass, rawMid){
+  // Processa kicks pendentes por anel
+  for(let i = 0; i < N_RINGS; i++){
+    for(let j = pendingKicks[i].length - 1; j >= 0; j--){
+      pendingKicks[i][j].framesLeft--;
+      if(pendingKicks[i][j].framesLeft <= 0){
+        ringVel[i] += pendingKicks[i][j].mag * 0.35;
+        // Spawn trail no raio atual do anel
+        const breathScale = i === 0 ? (1.0 + breathPos * 0.14) : 1.0;
+        trailR[i] = RING_RADII[i] * breathScale + ringPos[i] * 0.04;
+        trailA[i] = 0.75;
+        pendingKicks[i].splice(j, 1);
+      }
+    }
+    ringPos[i] += ringVel[i];
+    ringVel[i] *= 0.65;
+    ringPos[i] *= 0.80;
+
+    // Trail: expande e some
+    if(trailA[i] > 0){
+      trailR[i] += 0.009;
+      trailA[i] -= 0.052;
+      if(trailA[i] < 0) trailA[i] = 0;
+    }
+  }
+
+  // Breath — bass (anéis 1-5)
+  const rawBassClamped = rawBass > 0.08 ? rawBass : 0;
+  const breathTarget   = rawBassClamped * 2.0;
+  breathVel += (breathTarget - breathPos) * 0.10;
+  breathPos += breathVel;
+  breathVel *= 0.75;
+
+  // Wave — mid (anel 0: guitarra/voz/piano)
+  const rawMidClamped = rawMid > 0.05 ? rawMid : 0;
+  wavePhase += rawMidClamped * 4.0 + 0.008;
+  waveAmp    = rawMidClamped * 0.06;
+
+  flashAlpha   *= 0.72;
+  glowStrength *= 0.80;
+
+  // Física validada — sempre calculada, renderizada quando reativada
+  pulsePos  += pulseVel;
+  pulseVel  *= 0.65;
+  pulsePos  *= 0.80;
+  warpAmount *= 0.68;
+  flowVel   += rawMidClamped * 0.22;
+  flowAngle += flowVel;
+  flowVel   *= 0.78;
+
+  // Rastro radial simples
+  if(trailAlpha > 0){
+    trailRadius += 0.010;
+    trailAlpha  -= 0.055;
+    if(trailAlpha < 0) trailAlpha = 0;
+  }
+  // Fantasmas — decaem suavemente entre kicks
+  for(const g of ghostData){
+    g.alpha -= 0.012;
+    if(g.alpha < 0) g.alpha = 0;
+  }
+}
+
+// ─────────────────────────────────────────────────────────
+//  RENDER
+// ─────────────────────────────────────────────────────────
+const TWO_PI = Math.PI * 2;
+
+function draw(){
+  const W  = canvas.width;
+  const H  = canvas.height;
+  const cx = W / 2;
+  const cy = H / 2;
+  const S  = Math.min(W, H);
+
+  // Fundo preto
   ctx.fillStyle = '#000';
   ctx.fillRect(0, 0, W, H);
 
-  // ── Flash branco no kick ────────────────────────────────────────
-  const elapsed = now - kickTime;
-  if(elapsed < FLASH_MS){
-    const a = (1 - elapsed / FLASH_MS) * 0.92;
-    ctx.fillStyle = `rgba(255,255,255,${a.toFixed(3)})`;
-    ctx.fillRect(0, 0, W, H);
+
+  const breathScale = 1.0 + breathPos * 0.10;
+  const baseR       = S * RING_RADII[1] * breathScale;
+  const pOffset     = ringPos[1] * S * 0.038;
+
+  // Fantasmas — memória dos últimos 3 kicks (ciano)
+  for(const g of ghostData){
+    if(g.alpha <= 0) continue;
+    const r = Math.max(baseR + g.pos * S * 0.038, 2);
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, TWO_PI);
+    ctx.strokeStyle = `rgba(0,210,255,${g.alpha.toFixed(3)})`;
+    ctx.lineWidth   = 1.2;
+    ctx.stroke();
   }
 
-  // ── Texto KICK ──────────────────────────────────────────────────
-  if(elapsed < 300){
-    const a = Math.max(0, 1 - elapsed / 300);
+  // Núcleo — círculo principal branco azulado
+  {
+    const r = Math.max(baseR + pOffset, 2);
     ctx.save();
-    ctx.globalAlpha = a;
-    ctx.fillStyle   = '#fff';
-    ctx.font        = `bold ${Math.round(H * 0.12)}px 'Space Mono', monospace`;
-    ctx.textAlign   = 'center';
-    ctx.textBaseline= 'middle';
-    ctx.fillText('KICK', W/2, H/2);
+    if(glowStrength > 0.01){
+      ctx.shadowBlur  = glowStrength * 28;
+      ctx.shadowColor = 'rgba(220,235,255,0.9)';
+    }
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, TWO_PI);
+    ctx.strokeStyle = 'rgba(220,235,255,0.90)';
+    ctx.lineWidth   = 1.5;
+    ctx.stroke();
     ctx.restore();
   }
 
-  // ── Painel de diagnóstico ───────────────────────────────────────
-  // 4 métricas em texto + barra horizontal
-  // Posição: canto superior esquerdo, compacto, sem estética
-  const PAD  = 20;
-  const LH   = 36;        // altura de cada linha
-  const BH   = 14;        // altura da barra
-  const BW   = Math.min(W * 0.38, 340); // largura máxima da barra
-  const LPAD = 180;       // largura da coluna de label + valor
+  // Rastro radial — expande e some
+  if(trailAlpha > 0){
+    ctx.beginPath();
+    ctx.arc(cx, cy, trailRadius * S, 0, TWO_PI);
+    ctx.strokeStyle = `rgba(220,235,255,${trailAlpha.toFixed(3)})`;
+    ctx.lineWidth   = 1;
+    ctx.stroke();
+  }
 
-  // Atualiza picos para escala das barras
-  peakKickBand  = Math.max(peakKickBand  * 0.998, diagKickBand);
-  peakFlux      = Math.max(peakFlux      * 0.998, diagFlux);
-  peakThreshold = Math.max(peakThreshold * 0.998, diagThreshold);
-
-  ctx.save();
-  ctx.globalAlpha = 0.95;
-  ctx.textBaseline = 'top';
-  ctx.textAlign    = 'left';
-
-  // ── 3 perguntas simples ─────────────────────────────────────────
-  // Cada uma é uma condição do trigger, em linguagem direta
-  const checks = [
-    {
-      pergunta: 'Tem impacto agora?',
-      detalhe : 'mudança brusca no grave',
-      ok      : diagCond1,
-    },
-    {
-      pergunta: 'Tem grave suficiente?',
-      detalhe : 'banda 20–140 Hz acima do mínimo',
-      ok      : diagCond2,
-    },
-    {
-      pergunta: 'É o pico do momento?',
-      detalhe : 'impacto mais forte dos últimos frames',
-      ok      : diagCond3,
-    },
-  ];
-
-  checks.forEach((c, i) => {
-    const Y = PAD + i * 58;
-
-    // Fundo da linha
-    ctx.fillStyle = c.ok ? 'rgba(0,255,136,0.07)' : 'rgba(255,50,50,0.06)';
-    ctx.fillRect(PAD - 8, Y - 4, BW + 60, 48);
-
-    // Símbolo grande
-    ctx.font      = 'bold 26px Space Mono, monospace';
-    ctx.fillStyle = c.ok ? '#00ff88' : '#ff4444';
-    ctx.textBaseline = 'top';
-    ctx.fillText(c.ok ? '✓' : '✗', PAD, Y + 8);
-
-    // Pergunta
-    ctx.font      = 'bold 14px Space Mono, monospace';
-    ctx.fillStyle = c.ok ? '#fff' : 'rgba(255,120,120,0.9)';
-    ctx.fillText(c.pergunta, PAD + 36, Y + 4);
-
-    // Detalhe
-    ctx.font      = '10px Space Mono, monospace';
-    ctx.fillStyle = 'rgba(255,255,255,0.28)';
-    ctx.fillText(c.detalhe, PAD + 36, Y + 22);
-
-    // Barra de progresso fina
-    const barY = Y + 36;
-    ctx.fillStyle = 'rgba(255,255,255,0.06)';
-    ctx.fillRect(PAD + 36, barY, BW - 36, 6);
-    let barVal = 0;
-    if(i === 0) barVal = peakFlux > 0 ? Math.min(diagFlux / peakFlux, 1) : 0;
-    if(i === 1) barVal = Math.min(diagBN / 5, 1);
-    if(i === 2) barVal = diagFluxPeak > 0 ? Math.min(diagFlux / (diagFluxPeak * 0.95), 1) : 0;
-    ctx.fillStyle = c.ok ? '#00ff88' : '#ff4444';
-    ctx.fillRect(PAD + 36, barY, (BW - 36) * barVal, 6);
-  });
-
-  // ── Resultado final ─────────────────────────────────────────────
-  const trigY = PAD + 3 * 58 + 12;
-  const allOk = diagCond1 && diagCond2 && diagCond3;
-  ctx.fillStyle = allOk ? '#00ff88' : 'rgba(255,255,255,0.12)';
-  ctx.font      = `bold ${allOk ? 22 : 16}px Space Mono, monospace`;
-  ctx.fillText(allOk ? '● KICK DETECTADO' : '○ aguardando kick...', PAD, trigY);
-
-  // BPM
-  const bpmStr = bpm > 0 ? `${bpm} BPM` : '--- BPM';
-  ctx.fillStyle    = 'rgba(255,255,255,0.20)';
-  ctx.font         = '11px Space Mono, monospace';
-  ctx.textAlign    = 'right';
-  ctx.textBaseline = 'top';
-  ctx.fillText(bpmStr, W - PAD, PAD);
-
-  // Nome do arquivo
-  ctx.fillStyle = 'rgba(255,255,255,0.15)';
-  ctx.font      = '10px Space Mono, monospace';
-  ctx.fillText(trackLabel, W - PAD, PAD + 18);
-
-  ctx.restore();
+  // DESATIVADO: anel 0 (mid/roxo), anéis 2-5 (cascata)
+  // drawInnerRing / drawOuterRings
 }
 
-
-// ═══════════════════════════════════════════════════════════════════
-//  ÁUDIO — pipeline intacta, sem alterações
-//  Apenas expõe variáveis de diagnóstico para o renderer
-// ═══════════════════════════════════════════════════════════════════
+// ─────────────────────────────────────────────────────────
+//  ÁUDIO — parâmetros validados, não alterar
+// ─────────────────────────────────────────────────────────
 let audioCtx, analyser, sourceNode, audioBuffer;
 const FFT = 512;
 let freqData = null;
@@ -227,22 +300,17 @@ function setupAnalyser(){
 }
 
 async function loadURL(url){
-  showLoading(true);
   try{
     const r = await fetch(url); if(!r.ok) throw 0;
     audioBuffer = await audioCtx.decodeAudioData(await r.arrayBuffer());
-    showLoading(false); startPlayback();
-    trackLabel = url.split('/').pop();
-    return true;
-  } catch { showLoading(false); return false; }
+    startPlayback(); return true;
+  } catch { return false; }
 }
 async function loadFile(file){
-  showLoading(true);
   try{
     audioBuffer = await audioCtx.decodeAudioData(await file.arrayBuffer());
-    showLoading(false); startPlayback();
-    trackLabel = file.name;
-  } catch { showLoading(false); }
+    startPlayback();
+  } catch {}
 }
 function startPlayback(){
   if(sourceNode){ sourceNode.disconnect(); sourceNode = null; }
@@ -256,22 +324,23 @@ function startPlayback(){
 function bandRMS(lo, hi){
   if(!analyser || !freqData) return 0;
   const bin = audioCtx.sampleRate / FFT;
-  const i0  = Math.max(0, Math.floor(lo/bin));
-  const i1  = Math.min(freqData.length-1, Math.floor(hi/bin));
+  const i0  = Math.max(0, Math.floor(lo / bin));
+  const i1  = Math.min(freqData.length - 1, Math.floor(hi / bin));
   if(i1 < i0) return 0;
   let s = 0;
-  for(let i=i0; i<=i1; i++){ const v=freqData[i]/255; s+=v*v; }
-  return Math.sqrt(s/(i1-i0+1));
+  for(let i = i0; i <= i1; i++){ const v = freqData[i] / 255; s += v * v; }
+  return Math.sqrt(s / (i1 - i0 + 1));
 }
 
-// Spectral Flux — kick detection (sem alterações)
+// Spectral Flux — parâmetros validados
 const FLUX_HIST = 43;
 const fluxHistory = new Float32Array(FLUX_HIST);
 let fluxPtr=0, fluxSmooth=0, fluxPeak=0, prevFFT=null;
-const BEAT_SENS=1.1, COOL_FRAMES=8;
+const BEAT_SENS=2.0, COOL_FRAMES=14;
 let beatCool=0, bpm=0;
 const bTimes=[];
 let bassI0=-1, bassI1=-1;
+let kickFired=false, kickMag=0, currentRawBass=0, currentRawMid=0;
 
 function processAudio(){
   if(!analyser || !freqData) return;
@@ -279,80 +348,86 @@ function processAudio(){
 
   if(bassI0 < 0){
     const bin = audioCtx.sampleRate / FFT;
-    bassI0 = Math.max(0, Math.floor(20/bin));
-    bassI1 = Math.min(freqData.length-1, Math.floor(140/bin));
+    bassI0 = Math.max(0, Math.floor(20  / bin));
+    bassI1 = Math.min(freqData.length - 1, Math.floor(140 / bin));
   }
 
-  const rawBass    = bandRMS(20,  140);
-  const rawKickBand= bandRMS(60,  120);  // banda específica do kick
+  const rawBass = bandRMS(20,  140);
+  const rawMid  = bandRMS(500, 6000);
+  currentRawBass = rawBass;
+  currentRawMid  = rawMid;
 
-  // Expõe nível da banda de kick para o renderer
-  diagKickBand = rawKickBand;
-
-  // Spectral flux
   let flux = 0;
   if(prevFFT !== null){
-    for(let i=bassI0; i<=bassI1; i++){
-      const diff = (freqData[i]/255) - prevFFT[i];
+    for(let i = bassI0; i <= bassI1; i++){
+      const diff = (freqData[i] / 255) - prevFFT[i];
       if(diff > 0) flux += diff;
     }
   }
   if(prevFFT === null) prevFFT = new Float32Array(freqData.length);
-  for(let i=0; i<freqData.length; i++) prevFFT[i] = freqData[i]/255;
+  for(let i = 0; i < freqData.length; i++) prevFFT[i] = freqData[i] / 255;
 
-  fluxSmooth = 0.3*flux + 0.7*fluxSmooth;
-  flux = fluxSmooth;
-  fluxPeak = Math.max(fluxPeak*0.98, flux);
+  fluxSmooth = 0.3 * flux + 0.7 * fluxSmooth;
+  flux       = fluxSmooth;
+  fluxPeak   = Math.max(fluxPeak * 0.98, flux);
   fluxHistory[fluxPtr % FLUX_HIST] = flux;
   fluxPtr++;
 
-  let avg=0; for(let i=0;i<FLUX_HIST;i++) avg+=fluxHistory[i]; avg/=FLUX_HIST;
-  let variance=0; for(let i=0;i<FLUX_HIST;i++){const d=fluxHistory[i]-avg;variance+=d*d;} variance/=FLUX_HIST;
-  const threshold = Math.max(avg + variance*BEAT_SENS, avg*1.2);
-  const bN = rawBass / (Math.max(rawBass*0.1, 0.01));
+  let avg = 0;
+  for(let i = 0; i < FLUX_HIST; i++) avg += fluxHistory[i];
+  avg /= FLUX_HIST;
 
-  // Expõe todas as variáveis de diagnóstico
-  diagFlux      = flux;
-  diagThreshold = threshold;
-  diagFluxPeak  = fluxPeak;
-  diagBN        = bN;
-  diagCond1     = flux > threshold;
-  diagCond2     = bN > 0.08;
-  diagCond3     = flux >= fluxPeak * 0.95;
-  diagTrigger   = false;
+  let variance = 0;
+  for(let i = 0; i < FLUX_HIST; i++){ const d = fluxHistory[i] - avg; variance += d * d; }
+  variance /= FLUX_HIST;
 
+  const threshold = Math.max(avg + variance * BEAT_SENS, avg * 1.8);
+  const bN        = rawBass / Math.max(rawBass * 0.1, 0.01);
+
+  kickFired = false;
   if(beatCool > 0){ beatCool--; }
-  else if(flux > threshold && bN > 0.08 && flux >= fluxPeak*0.95){
-    diagTrigger = true;
-    kickTime    = performance.now();
-    beatCool    = COOL_FRAMES;
+  else if(flux > threshold && bN > 0.20 && flux >= fluxPeak * 0.95){
+    kickFired = true;
+    kickMag   = Math.min(rawBass * 3.0, 1.0);
+    beatCool  = COOL_FRAMES;
 
-    const now = performance.now(); bTimes.push(now);
+    const now = performance.now();
+    bTimes.push(now);
     if(bTimes.length > 8) bTimes.shift();
     if(bTimes.length >= 2){
-      const diffs=[]; for(let i=1;i<bTimes.length;i++) diffs.push(bTimes[i]-bTimes[i-1]);
-      const avgD = diffs.reduce((a,b)=>a+b,0)/diffs.length;
-      if(avgD > 0) bpm = Math.round(60000/avgD);
+      const diffs = [];
+      for(let i = 1; i < bTimes.length; i++) diffs.push(bTimes[i] - bTimes[i-1]);
+      const avgD = diffs.reduce((a, b) => a + b, 0) / diffs.length;
+      if(avgD > 0) bpm = Math.round(60000 / avgD);
     }
   }
 }
 
-
-// ── Estado ──────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
+//  RENDER LOOP
+// ─────────────────────────────────────────────────────────
 let isPlaying = false;
-let trackLabel = '';
 
-// ── Render loop ─────────────────────────────────────────────────────
 function render(){
   requestAnimationFrame(render);
-  if(isPlaying) processAudio();
-  else { diagKickBand=0; diagFlux=0; diagThreshold=0; diagTrigger=false; }
-  drawDiag();
+  if(isPlaying){
+    processAudio();
+    if(kickFired) applyKickImpulse(kickMag);
+  }
+  stepPhysics(currentRawBass, currentRawMid);
+  draw();
 }
 requestAnimationFrame(render);
 
+// ─────────────────────────────────────────────────────────
+//  UI
+// ─────────────────────────────────────────────────────────
+const ui = document.getElementById('ui');
+function hideUI(){
+  ui.classList.add('hidden');
+  setTimeout(() => ui.style.display = 'none', 450);
+}
 
-// ── UI ──────────────────────────────────────────────────────────────
 document.getElementById('startBtn').addEventListener('click', async () => {
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   setupAnalyser();
@@ -361,34 +436,27 @@ document.getElementById('startBtn').addEventListener('click', async () => {
     const osc = audioCtx.createOscillator(), g = audioCtx.createGain();
     osc.frequency.value = 80; g.gain.value = 0.04;
     osc.connect(g); g.connect(analyser); osc.start();
-    trackLabel = 'sem arquivo — oscilador';
-    isPlaying  = true;
+    isPlaying = true;
   }
-  const ol = document.getElementById('startOverlay');
-  ol.classList.add('hidden'); setTimeout(() => ol.style.display='none', 450);
+  hideUI();
 });
 
-document.getElementById('fileDropArea').addEventListener('click',
-  () => document.getElementById('fileInput').click());
-document.getElementById('fileInput').addEventListener('change', async e => {
+document.getElementById('drop').addEventListener('click',
+  () => document.getElementById('fi').click());
+
+document.getElementById('fi').addEventListener('change', async e => {
   const f = e.target.files[0]; if(!f) return;
-  if(!audioCtx){ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); setupAnalyser(); }
-  await loadFile(f);
-  const ol = document.getElementById('startOverlay');
-  ol.classList.add('hidden'); setTimeout(() => ol.style.display='none', 450);
+  if(!audioCtx){ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); setupAnalyser(); }
+  await loadFile(f); hideUI();
 });
-document.getElementById('fileDropArea').addEventListener('dragover',
-  e => { e.preventDefault(); });
-document.getElementById('fileDropArea').addEventListener('drop', async e => {
+
+document.getElementById('drop').addEventListener('dragover', e => e.preventDefault());
+document.getElementById('drop').addEventListener('drop', async e => {
   e.preventDefault();
   const f = e.dataTransfer.files[0]; if(!f || !f.type.startsWith('audio/')) return;
-  if(!audioCtx){ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); setupAnalyser(); }
-  await loadFile(f);
-  const ol = document.getElementById('startOverlay');
-  ol.classList.add('hidden'); setTimeout(() => ol.style.display='none', 450);
+  if(!audioCtx){ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); setupAnalyser(); }
+  await loadFile(f); hideUI();
 });
-
-function showLoading(v){ document.getElementById('loadingMsg').classList.toggle('show', v); }
 </script>
 </body>
 </html>
