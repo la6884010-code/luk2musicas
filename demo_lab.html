@@ -129,90 +129,67 @@ function drawDiag(){
   ctx.textBaseline = 'top';
   ctx.textAlign    = 'left';
 
-  // ── Seção 1: barras de valores ──────────────────────────────────
-  const metrics = [
-    { label:'KICK BAND', sub:'60–120 Hz',      value:diagKickBand, peak:peakKickBand,  color:'#00e5ff', fmt: v=>v.toFixed(3) },
-    { label:'FLUX',      sub:'spectral flux',   value:diagFlux,     peak:peakFlux,      color:'#ffcc00', fmt: v=>v.toFixed(4) },
-    { label:'THRESHOLD', sub:'limite',          value:diagThreshold,peak:peakThreshold, color:'#ff6644', fmt: v=>v.toFixed(4) },
+  // ── 3 perguntas simples ─────────────────────────────────────────
+  // Cada uma é uma condição do trigger, em linguagem direta
+  const checks = [
+    {
+      pergunta: 'Tem impacto agora?',
+      detalhe : 'mudança brusca no grave',
+      ok      : diagCond1,
+    },
+    {
+      pergunta: 'Tem grave suficiente?',
+      detalhe : 'banda 20–140 Hz acima do mínimo',
+      ok      : diagCond2,
+    },
+    {
+      pergunta: 'É o pico do momento?',
+      detalhe : 'impacto mais forte dos últimos frames',
+      ok      : diagCond3,
+    },
   ];
 
-  metrics.forEach((m, i) => {
-    const X = PAD, Y = PAD + i * LH * 1.5;
-    ctx.fillStyle = 'rgba(255,255,255,0.30)';
+  checks.forEach((c, i) => {
+    const Y = PAD + i * 58;
+
+    // Fundo da linha
+    ctx.fillStyle = c.ok ? 'rgba(0,255,136,0.07)' : 'rgba(255,50,50,0.06)';
+    ctx.fillRect(PAD - 8, Y - 4, BW + 60, 48);
+
+    // Símbolo grande
+    ctx.font      = 'bold 26px Space Mono, monospace';
+    ctx.fillStyle = c.ok ? '#00ff88' : '#ff4444';
+    ctx.textBaseline = 'top';
+    ctx.fillText(c.ok ? '✓' : '✗', PAD, Y + 8);
+
+    // Pergunta
+    ctx.font      = 'bold 14px Space Mono, monospace';
+    ctx.fillStyle = c.ok ? '#fff' : 'rgba(255,120,120,0.9)';
+    ctx.fillText(c.pergunta, PAD + 36, Y + 4);
+
+    // Detalhe
     ctx.font      = '10px Space Mono, monospace';
-    ctx.fillText(`${m.label}  (${m.sub})`, X, Y);
-    ctx.fillStyle = m.color;
-    ctx.font      = 'bold 13px Space Mono, monospace';
-    ctx.fillText(m.fmt(m.value), X + LPAD, Y);
-    const barY = Y + 16;
-    ctx.fillStyle = 'rgba(255,255,255,0.06)';
-    ctx.fillRect(X, barY, BW, BH);
-    const ratio = m.peak > 0 ? Math.min(m.value / m.peak, 1) : 0;
-    ctx.fillStyle = m.color;
-    ctx.fillRect(X, barY, BW * ratio, BH);
-
-    // Na barra do FLUX: duas linhas verticais — threshold e fluxPeak*0.95
-    if(m.label === 'FLUX' && peakFlux > 0){
-      // Linha laranja = threshold
-      const tx = X + BW * Math.min(diagThreshold / peakFlux, 1);
-      ctx.strokeStyle = '#ff6644'; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.moveTo(tx, barY-3); ctx.lineTo(tx, barY+BH+3); ctx.stroke();
-      // Linha branca = fluxPeak*0.95 (condição isPeak)
-      const px = X + BW * Math.min((diagFluxPeak*0.95) / peakFlux, 1);
-      ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.moveTo(px, barY-3); ctx.lineTo(px, barY+BH+3); ctx.stroke();
-    }
-  });
-
-  // Legenda das linhas na barra FLUX
-  const legendY = PAD + 1 * LH * 1.5 + 16 + BH + 5;
-  ctx.font      = '9px Space Mono, monospace';
-  ctx.fillStyle = 'rgba(255,100,68,0.7)';  ctx.fillText('▲ threshold',   PAD,        legendY);
-  ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fillText('▲ peak×0.95',  PAD + 90,   legendY);
-
-  // ── Seção 2: sub-condições do trigger ──────────────────────────
-  // Mostra cada condição separada — verde=ok, vermelho=bloqueando
-  const condY = PAD + 3 * LH * 1.5 + 10;
-  ctx.font      = '10px Space Mono, monospace';
-  ctx.fillStyle = 'rgba(255,255,255,0.30)';
-  ctx.fillText('CONDIÇÕES DO TRIGGER:', PAD, condY);
-
-  const conds = [
-    {
-      label : 'flux > threshold',
-      ok    : diagCond1,
-      detail: `${diagFlux.toFixed(5)}  >  ${diagThreshold.toFixed(5)}`,
-    },
-    {
-      label : 'bN > 0.08',
-      ok    : diagCond2,
-      detail: `bN = ${diagBN.toFixed(3)}`,
-    },
-    {
-      label : 'flux >= peak×0.95',
-      ok    : diagCond3,
-      detail: `${diagFlux.toFixed(5)}  >=  ${(diagFluxPeak*0.95).toFixed(5)}  (peak=${diagFluxPeak.toFixed(5)})`,
-    },
-  ];
-  conds.forEach((c, i) => {
-    const cy = condY + 18 + i * 26;
-    ctx.fillStyle = c.ok ? '#00ff88' : '#ff3333';
-    ctx.font      = 'bold 13px Space Mono, monospace';
-    ctx.fillText(c.ok ? '✓' : '✗', PAD, cy);
-    ctx.fillStyle = c.ok ? 'rgba(255,255,255,0.7)' : 'rgba(255,80,80,0.85)';
-    ctx.font      = '11px Space Mono, monospace';
-    ctx.fillText(c.label, PAD + 22, cy);
-    // Valores reais da comparação
     ctx.fillStyle = 'rgba(255,255,255,0.28)';
-    ctx.font      = '9px Space Mono, monospace';
-    ctx.fillText(c.detail, PAD + 22, cy + 13);
+    ctx.fillText(c.detalhe, PAD + 36, Y + 22);
+
+    // Barra de progresso fina
+    const barY = Y + 36;
+    ctx.fillStyle = 'rgba(255,255,255,0.06)';
+    ctx.fillRect(PAD + 36, barY, BW - 36, 6);
+    let barVal = 0;
+    if(i === 0) barVal = peakFlux > 0 ? Math.min(diagFlux / peakFlux, 1) : 0;
+    if(i === 1) barVal = Math.min(diagBN / 5, 1);
+    if(i === 2) barVal = diagFluxPeak > 0 ? Math.min(diagFlux / (diagFluxPeak * 0.95), 1) : 0;
+    ctx.fillStyle = c.ok ? '#00ff88' : '#ff4444';
+    ctx.fillRect(PAD + 36, barY, (BW - 36) * barVal, 6);
   });
 
-  // ── Seção 3: trigger indicator ──────────────────────────────────
-  const trigY = condY + 18 + 3 * 20 + 12;
-  ctx.font      = 'bold 13px Space Mono, monospace';
-  ctx.fillStyle = diagTrigger ? '#00ff88' : 'rgba(255,255,255,0.15)';
-  ctx.fillText('TRIGGER: ' + (diagTrigger ? 'ON ●' : 'OFF ○'), PAD, trigY);
+  // ── Resultado final ─────────────────────────────────────────────
+  const trigY = PAD + 3 * 58 + 12;
+  const allOk = diagCond1 && diagCond2 && diagCond3;
+  ctx.fillStyle = allOk ? '#00ff88' : 'rgba(255,255,255,0.12)';
+  ctx.font      = `bold ${allOk ? 22 : 16}px Space Mono, monospace`;
+  ctx.fillText(allOk ? '● KICK DETECTADO' : '○ aguardando kick...', PAD, trigY);
 
   // BPM
   const bpmStr = bpm > 0 ? `${bpm} BPM` : '--- BPM';
