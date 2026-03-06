@@ -570,6 +570,7 @@ function processAudio(){
 // ── Estado ───────────────────────────────────
 let mode=0,palette=1,colorOffset=0,colorOffV=0;
 let isPlaying=false;
+let colorHitCooldown=0;
 
 // ── Render Loop ──────────────────────────────
 let startT=null;
@@ -586,6 +587,14 @@ function render(ts){
   else{ sBass=sMid=sHigh=sKick=sSnare=sAudio=beatFlash=0; }
   if(beatFlash>.6)colorOffV+=beatFlash*.14;
   colorOffV*=.88;colorOffset+=colorOffV;
+  // ── Color hit em grave forte ──────────────────
+  if(isPlaying){
+    if(colorHitCooldown>0) colorHitCooldown--;
+    else if(sKick>0.65||sBass>0.60){
+      colorOffset+=0.8;
+      colorHitCooldown=12;
+    }
+  }
   document.getElementById('bpmDisplay').textContent=bpm>0?bpm:'---';
   if(analyser&&freqData)
     barRanges.forEach((r,i)=>document.getElementById(barIds[i]).style.height=Math.max(3,band(r[0],r[1])*180)+'px');
