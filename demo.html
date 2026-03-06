@@ -394,7 +394,7 @@ vec3 modePlasma(vec2 u0){
 void main(){
   vec2 uv=(gl_FragCoord.xy*2.-u_res)/u_res.y;
   // reações ao beat — zoom, kick, snare
-  uv*=1.-u_beat*.10-u_bass*.12-u_kick*.11-u_snare*.05;
+  uv*=1.-u_beat*.14-u_bass*.10-u_kick*.20-u_snare*.07;
   uv+=uv*u_snare*.07*sin(u_time*18.+uv.x*10.);
   uv+=uv*u_high*.02*sin(u_time*25.+uv.y*6.);
 
@@ -409,7 +409,7 @@ void main(){
   col/=max(1.,length(col)*.4);
   col=aces(col*1.8);
   col=mix(col,PAL(u_time*.08)*3.0,u_beat*.35);
-  col=mix(col,vec3(1.),u_snare*.25);
+  col=mix(col,vec3(1.),u_snare*.40);
   col*=smoothstep(1.5,1.5*.2,length(uv));
   f_color=vec4(col,1.);
 }`;
@@ -436,7 +436,7 @@ resize();window.addEventListener('resize',resize);
 
 // ── Audio ────────────────────────────────────
 let audioCtx,analyser,sourceNode,audioBuffer;
-const FFT=1024; // menor = menos latência
+const FFT=512; // menor = menos latência
 let freqData=null;
 
 function setupAnalyser(){
@@ -526,9 +526,9 @@ function processAudio(){
   const bN=Math.min(rB/(mBass+1e-6),1),mN=Math.min(rM/(mMid+1e-6),1),hN=Math.min(rH/(mHigh+1e-6),1);
   const kN=Math.min(rK/(mKick+1e-6),1),sN=Math.min(rS/(mSnare+1e-6),1);
   function sm(o,v,u,d){return o+(v-o)*(v>o?u:d);}
-  sBass=sm(sBass,bN,0.40,0.12);sMid=sm(sMid,mN,0.30,0.14);sHigh=sm(sHigh,hN,0.50,0.18);
-  sKick=sm(sKick,kN,0.50,0.14);sSnare=sm(sSnare,sN,0.40,0.15);
-  sAudio=sm(sAudio,Math.min(Math.max(rB+rM*0.5,0),1),0.35,0.15);
+  sBass=sm(sBass,bN,0.70,0.20);sMid=sm(sMid,mN,0.55,0.22);sHigh=sm(sHigh,hN,0.75,0.28);
+  sKick=sm(sKick,kN,0.85,0.22);sSnare=sm(sSnare,sN,0.75,0.24);
+  sAudio=sm(sAudio,Math.min(Math.max(rB+rM*0.5,0),1),0.65,0.20);
 
   // Spectral Flux
   let flux=0;
@@ -552,7 +552,7 @@ function processAudio(){
   const energyOK=bN>0.08;
   const isPeak=flux>=fluxPeak*0.95;
 
-  if(beatCool>0){beatCool--;beatFlash*=0.82;}
+  if(beatCool>0){beatCool--;beatFlash*=0.60;}
   else if(flux>threshold&&energyOK&&isPeak){
     beatFlash=1.0;beatCool=COOL_FRAMES;
     const now=performance.now();bTimes.push(now);
@@ -564,7 +564,7 @@ function processAudio(){
     }
     const bf=document.getElementById('beatFlash');
     bf.classList.add('active');setTimeout(()=>bf.classList.remove('active'),60);
-  }else{beatFlash*=0.82;}
+  }else{beatFlash*=0.60;}
 }
 
 // ── Estado ───────────────────────────────────
