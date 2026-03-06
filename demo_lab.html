@@ -3,10 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-<meta name="mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-capable" content="yes"/>
-<title>LUK2 — Lab</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<title>LUK2 — Lab (Kick Debug)</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <style>
   *{margin:0;padding:0;box-sizing:border-box;}
@@ -16,339 +13,153 @@
   #startOverlay{
     position:absolute;inset:0;z-index:50;
     display:flex;flex-direction:column;align-items:center;justify-content:center;
-    background:radial-gradient(ellipse at 40% 40%,rgba(0,200,255,.12),transparent 60%),
-               radial-gradient(ellipse at 70% 65%,rgba(140,60,255,.08),transparent 55%),
-               rgba(4,5,12,.97);
-    backdrop-filter:blur(4px);transition:opacity .6s ease;
+    background:#000;transition:opacity .5s ease;
   }
   #startOverlay.hidden{opacity:0;pointer-events:none;}
-  .start-brand{font-family:'Syne',sans-serif;font-size:64px;font-weight:800;letter-spacing:4px;
-    background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(0,200,255,.72));
-    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px;}
-  .start-sub{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:4px;
-    color:rgba(0,200,255,.40);text-transform:uppercase;margin-bottom:10px;}
-  .start-tagline{color:rgba(255,255,255,.28);font-size:11px;letter-spacing:3px;text-transform:uppercase;margin-bottom:52px;}
+  .start-brand{font-family:'Syne',sans-serif;font-size:56px;font-weight:800;letter-spacing:4px;color:#fff;margin-bottom:6px;}
+  .start-sub{font-size:11px;letter-spacing:4px;color:rgba(255,255,255,.35);text-transform:uppercase;margin-bottom:48px;}
   .start-btn{
-    position:relative;padding:18px 52px;border-radius:100px;
-    border:1px solid rgba(0,200,255,.38);
-    background:linear-gradient(135deg,rgba(0,200,255,.16),rgba(80,0,255,.09));
-    color:#fff;font-family:'Syne',sans-serif;font-size:16px;font-weight:700;letter-spacing:2px;
-    cursor:pointer;transition:all .25s ease;
-    box-shadow:0 0 60px rgba(0,200,255,.13),inset 0 1px 0 rgba(255,255,255,.06);}
-  .start-btn:hover{transform:scale(1.06);box-shadow:0 0 80px rgba(0,200,255,.28);}
-  .start-note{margin-top:28px;color:rgba(255,255,255,.18);font-size:11px;letter-spacing:1px;text-align:center;}
+    padding:16px 48px;border-radius:100px;border:1px solid rgba(255,255,255,.3);
+    background:transparent;color:#fff;font-family:'Syne',sans-serif;font-size:15px;
+    font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .2s ease;}
+  .start-btn:hover{background:rgba(255,255,255,.08);}
+  .start-note{margin-top:24px;color:rgba(255,255,255,.18);font-size:11px;letter-spacing:1px;text-align:center;}
   .file-drop-area{
-    margin-top:16px;padding:12px 28px;border:1px dashed rgba(255,255,255,.28);border-radius:12px;
-    color:rgba(255,255,255,.75);font-size:11px;letter-spacing:1px;cursor:pointer;
-    transition:all .2s ease;text-align:center;background:rgba(255,255,255,.04);}
-  .file-drop-area:hover{border-color:rgba(0,200,255,.45);background:rgba(0,200,255,.04);}
+    margin-top:14px;padding:10px 24px;border:1px dashed rgba(255,255,255,.22);border-radius:10px;
+    color:rgba(255,255,255,.55);font-size:11px;letter-spacing:1px;cursor:pointer;
+    transition:all .2s;text-align:center;background:rgba(255,255,255,.03);}
+  .file-drop-area:hover{border-color:rgba(255,255,255,.45);}
   #fileInput{display:none;}
 
+  /* HUD minimalista */
   #hud{
-    position:absolute;top:0;left:0;right:0;z-index:20;padding:18px 24px;
-    display:flex;align-items:center;justify-content:space-between;pointer-events:none;
-    background:linear-gradient(to bottom,rgba(0,0,0,.50),transparent);}
-  .hud-brand{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;letter-spacing:3px;color:rgba(255,255,255,.86);}
-  .hud-tag{font-size:9px;color:rgba(0,200,255,.38);letter-spacing:3px;margin-top:3px;text-transform:uppercase;}
-  .bpm-display{font-family:'Space Mono',monospace;font-size:28px;font-weight:700;
-    color:rgba(255,255,255,.72);line-height:1;text-align:right;}
-  .bpm-label{font-size:9px;color:rgba(255,255,255,.22);letter-spacing:2px;margin-top:2px;text-align:right;}
+    position:absolute;top:0;left:0;right:0;z-index:20;padding:16px 20px;
+    display:flex;align-items:center;justify-content:space-between;pointer-events:none;}
+  .hud-brand{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;letter-spacing:3px;color:rgba(255,255,255,.5);}
+  .hud-tag{font-size:9px;color:rgba(255,255,255,.2);letter-spacing:3px;margin-top:2px;}
+  .bpm-display{font-family:'Space Mono',monospace;font-size:24px;font-weight:700;color:rgba(255,255,255,.5);text-align:right;}
+  .bpm-label{font-size:9px;color:rgba(255,255,255,.2);letter-spacing:2px;margin-top:2px;text-align:right;}
 
-  #beatFlash{position:absolute;inset:0;z-index:15;pointer-events:none;
-    border:3px solid rgba(255,0,180,0);transition:border-color .03s,opacity .08s;opacity:0;}
-  #beatFlash.active{border-color:rgba(255,0,180,.78);opacity:1;}
-
-  #controls{
-    position:absolute;bottom:0;left:0;right:0;z-index:20;padding:20px 24px 24px;
-    background:linear-gradient(to top,rgba(0,0,0,.70),transparent);
-    display:flex;align-items:flex-end;justify-content:space-between;gap:20px;}
-  .ctrl-group{display:flex;flex-direction:column;gap:8px;}
-  .ctrl-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.22);margin-bottom:2px;}
-  .ctrl-row{display:flex;gap:8px;align-items:center;}
-  .palette-swatch{width:32px;height:32px;border-radius:50%;cursor:pointer;
-    border:2px solid transparent;transition:all .2s ease;}
-  .palette-swatch:hover{transform:scale(1.2);border-color:rgba(255,255,255,.30);}
-  .palette-swatch.active{border-color:#fff;transform:scale(1.15);box-shadow:0 0 14px rgba(255,255,255,.22);}
-  .bars{display:flex;align-items:flex-end;gap:3px;height:36px;}
-  .bar{width:5px;border-radius:2px;background:rgba(0,200,255,.48);min-height:3px;transition:height .04s ease;}
-  .track-info{display:flex;align-items:center;gap:10px;}
-  .track-dot{width:8px;height:8px;border-radius:50%;background:rgba(0,200,255,.72);
-    box-shadow:0 0 10px rgba(0,200,255,.50);animation:pdot 1.2s ease-in-out infinite;}
-  @keyframes pdot{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.38;transform:scale(.75);}}
-  .track-dot.paused{animation:none;background:rgba(255,255,255,.20);}
-  .track-name{font-size:11px;color:rgba(255,255,255,.42);letter-spacing:1px;
-    max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .watermark{position:absolute;bottom:80px;right:24px;z-index:18;pointer-events:none;
-    font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,.07);}
+  /* Track info mínimo no rodapé */
+  #footer{
+    position:absolute;bottom:0;left:0;right:0;z-index:20;padding:16px 20px;
+    display:flex;align-items:center;justify-content:space-between;}
+  .track-info{display:flex;align-items:center;gap:8px;}
+  .track-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.4);animation:pdot 1.2s ease-in-out infinite;}
+  @keyframes pdot{0%,100%{opacity:1;}50%{opacity:.25;}}
+  .track-dot.paused{animation:none;background:rgba(255,255,255,.15);}
+  .track-name{font-size:10px;color:rgba(255,255,255,.28);letter-spacing:1px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .bars{display:flex;align-items:flex-end;gap:2px;height:28px;}
+  .bar{width:4px;border-radius:2px;background:rgba(255,255,255,.25);min-height:2px;transition:height .04s ease;}
 
   #idleMsg{
     position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
     z-index:25;pointer-events:auto;
-    background:rgba(4,6,18,.70);border:1px solid rgba(255,255,255,.11);
-    border-radius:100px;padding:12px 28px;backdrop-filter:blur(12px);
-    opacity:1;transition:opacity .8s;
-    font-family:'Space Mono',monospace;font-size:13px;letter-spacing:2px;
-    color:rgba(255,255,255,.75);white-space:nowrap;cursor:pointer;
-    animation:ipulse 2.4s ease-in-out infinite;}
-  #idleMsg:hover{background:rgba(0,200,255,.09);border-color:rgba(0,200,255,.38);}
+    background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);
+    border-radius:100px;padding:12px 28px;
+    font-size:13px;letter-spacing:2px;color:rgba(255,255,255,.55);
+    white-space:nowrap;cursor:pointer;transition:opacity .8s;}
   #idleMsg.hidden{opacity:0;pointer-events:none;}
-  @keyframes ipulse{
-    0%,100%{box-shadow:0 0 0 0 rgba(0,200,255,.0);border-color:rgba(255,255,255,.11);}
-    50%{box-shadow:0 0 24px 4px rgba(0,200,255,.16);border-color:rgba(0,200,255,.36);}}
-
-  /* ── Debug overlay (tecla D) ─────────────── */
-  #debug{
-    display:none;position:absolute;top:72px;left:24px;z-index:30;pointer-events:none;
-    font-family:'Space Mono',monospace;font-size:10px;line-height:2;
-    color:rgba(255,255,255,.30);letter-spacing:.5px;}
-  #debug.show{display:block;}
-  #debug span{color:rgba(0,200,255,.75);}
-  .dbev{color:rgba(255,60,180,.85) !important;}
 
   #loadingMsg{position:absolute;inset:0;z-index:60;display:none;align-items:center;
-    justify-content:center;background:rgba(4,5,12,.88);flex-direction:column;gap:16px;}
+    justify-content:center;background:#000;flex-direction:column;gap:14px;}
   #loadingMsg.show{display:flex;}
-  .loading-spinner{width:40px;height:40px;border:2px solid rgba(0,200,255,.07);
-    border-top-color:rgba(0,200,255,.68);border-radius:50%;animation:spin .8s linear infinite;}
+  .loading-spinner{width:32px;height:32px;border:2px solid rgba(255,255,255,.06);
+    border-top-color:rgba(255,255,255,.5);border-radius:50%;animation:spin .8s linear infinite;}
   @keyframes spin{to{transform:rotate(360deg);}}
-  .loading-text{color:rgba(255,255,255,.28);font-size:11px;letter-spacing:2px;}
-
-  @media(max-width:768px){
-    #hud{padding:12px 16px;}.hud-brand{font-size:16px;}.bpm-display{font-size:20px;}
-    #controls{flex-direction:column;align-items:stretch;gap:12px;padding:14px 16px 20px;
-      background:linear-gradient(to top,rgba(0,0,0,.92) 60%,transparent);}
-    .track-name{font-size:10px;max-width:140px;}.bars{height:24px;}.bar{width:4px;}
-    .palette-swatch{width:38px;height:38px;}.ctrl-label{font-size:8px;margin-bottom:0;}
-    .start-brand{font-size:44px;}.start-tagline{font-size:10px;margin-bottom:36px;}
-    .start-btn{padding:16px 36px;font-size:14px;}.file-drop-area{font-size:10px;padding:10px 20px;}
-    #debug{display:none!important;}
-  }
+  .loading-text{color:rgba(255,255,255,.25);font-size:11px;letter-spacing:2px;}
 </style>
 </head>
 <body>
-<canvas id="glCanvas"></canvas>
-<div id="beatFlash"></div>
+
+<!-- Canvas 2D — renderização minimalista -->
+<canvas id="c"></canvas>
 
 <div id="hud">
-  <div><div class="hud-brand">LUK2</div><div class="hud-tag">Lab</div></div>
-  <div>
-    <div class="bpm-display" id="bpmDisplay">---</div>
-    <div class="bpm-label">BPM</div>
+  <div><div class="hud-brand">LUK2</div><div class="hud-tag">Kick Debug</div></div>
+  <div><div class="bpm-display" id="bpmDisplay">---</div><div class="bpm-label">BPM</div></div>
+</div>
+
+<div id="footer">
+  <div class="track-info">
+    <div class="track-dot paused" id="trackDot"></div>
+    <div class="track-name" id="trackName">demo.mp3</div>
+  </div>
+  <div class="bars">
+    <div class="bar" id="b1"></div><div class="bar" id="b2"></div>
+    <div class="bar" id="b3"></div><div class="bar" id="b4"></div>
+    <div class="bar" id="b5"></div><div class="bar" id="b6"></div>
+    <div class="bar" id="b7"></div><div class="bar" id="b8"></div>
   </div>
 </div>
 
-<!-- Debug overlay: mostra motion state em tempo real (tecla D) -->
-<div id="debug">
-  breath  <span id="dB">0.000</span><br>
-  pulse   <span id="dP">0.000</span><br>
-  warp    <span id="dW">0.000</span><br>
-  flow    <span id="dF">0.000</span><br>
-  flash   <span id="dL">0.000</span><br>
-  kick    <span id="dK" class="dbev">·</span>   snare <span id="dS" class="dbev">·</span>
-</div>
-
-<div id="controls">
-  <div class="ctrl-group">
-    <div class="ctrl-label">Tocando Agora</div>
-    <div class="track-info">
-      <div class="track-dot paused" id="trackDot"></div>
-      <div class="track-name" id="trackName">demo.mp3</div>
-    </div>
-    <div class="bars">
-      <div class="bar" id="b1"></div><div class="bar" id="b2"></div>
-      <div class="bar" id="b3"></div><div class="bar" id="b4"></div>
-      <div class="bar" id="b5"></div><div class="bar" id="b6"></div>
-      <div class="bar" id="b7"></div><div class="bar" id="b8"></div>
-    </div>
-  </div>
-  <div class="ctrl-group">
-    <div class="ctrl-label">Paleta</div>
-    <div class="ctrl-row">
-      <div class="palette-swatch active" data-palette="0" style="background:linear-gradient(135deg,#00ccff,#0044cc);"></div>
-      <div class="palette-swatch"        data-palette="1" style="background:linear-gradient(135deg,#9933ff,#3300cc);"></div>
-      <div class="palette-swatch"        data-palette="2" style="background:linear-gradient(135deg,#00ffcc,#006699);"></div>
-      <div class="palette-swatch"        data-palette="3" style="background:linear-gradient(135deg,#3366ff,#cc00ff);"></div>
-      <div class="palette-swatch"        data-palette="4" style="background:linear-gradient(135deg,#ddeeff,#4477aa);"></div>
-    </div>
-  </div>
-</div>
-
-<div class="watermark">LUK2 LAB</div>
 <div id="idleMsg">▶ coloque sua música para começar</div>
 
 <div id="startOverlay">
   <div class="start-brand">LUK2</div>
-  <div class="start-sub">Lab</div>
-  <div class="start-tagline">Visualizador Fractal em Tempo Real</div>
-  <button class="start-btn" id="startBtn"><span>▶&nbsp;&nbsp;INICIAR DEMO</span></button>
-  <div class="start-note">ou escolha sua própria música para começar</div>
+  <div class="start-sub">Kick Debug</div>
+  <button class="start-btn" id="startBtn"><span>▶&nbsp;&nbsp;INICIAR</span></button>
+  <div class="start-note">ou escolha sua própria música</div>
   <div class="file-drop-area" id="fileDropArea">
-    ou arraste sua própria música aqui<br>
-    <span style="color:rgba(255,255,255,.45);">mp3 · wav · ogg · flac</span>
+    arraste um arquivo de áudio aqui<br>
+    <span style="color:rgba(255,255,255,.3);">mp3 · wav · ogg · flac</span>
     <input type="file" id="fileInput" accept="audio/*">
   </div>
 </div>
 
 <div id="loadingMsg">
   <div class="loading-spinner"></div>
-  <div class="loading-text">Carregando áudio…</div>
+  <div class="loading-text">Carregando…</div>
 </div>
 
 <script>
-// ═══════════════════════════════════════════════════════════════════════
-//  SHADERS
-//  O shader recebe apenas variáveis de motion state.
-//  Nenhum uniform de áudio bruto (sBass, sKick etc) chega aqui.
-// ═══════════════════════════════════════════════════════════════════════
-const VS = `#version 300 es
-in vec2 in_vert; out vec2 v_uv;
-void main(){ v_uv = in_vert*.5+.5; gl_Position = vec4(in_vert,0.,1.); }`;
+// ═══════════════════════════════════════════════════════════════════
+//  RENDERIZAÇÃO — 2D canvas, sem shader
+//
+//  Lógica:
+//  - fundo sempre preto
+//  - no frame em que kickFired=true → kickAlpha = 1.0
+//  - cada frame: kickAlpha decai linearmente pelo tempo
+//  - enquanto kickAlpha > 0 → desenha círculo branco sólido no centro
+//  - círculo desaparece em KICK_DURATION ms (80–120ms)
+// ═══════════════════════════════════════════════════════════════════
+const canvas = document.getElementById('c');
+const ctx    = canvas.getContext('2d');
 
-const FS = `#version 300 es
-precision highp float;
-in vec2 v_uv; out vec4 f_color;
-
-uniform vec2  u_res;
-uniform float u_time;
-
-// ── Motion State ─────────────────────────────────────────────────────
-uniform float u_breath;     // escala / tamanho do blob (bass spring)
-uniform float u_pulse;      // expansão radial instantânea (kick)
-uniform float u_warp;       // distorção da borda (kick lento)
-uniform float u_flow;       // ângulo acumulado (mid)
-uniform float u_flash;      // flash branco / cor quente (snare + kick)
-uniform float u_colorPhase;
-
-uniform int u_palette;
-
-vec3 aces(vec3 x){ return clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),0.,1.); }
-vec2 rot2(vec2 p,float a){ float c=cos(a),s=sin(a); return vec2(p.x*c-p.y*s,p.x*s+p.y*c); }
-vec3 cpal(float t,vec3 a,vec3 b,vec3 c,vec3 d){ return a+b*cos(6.28318*(c*t+d)); }
-
-vec3 coldColor(float t,int pal){
-  if(pal==0) return cpal(t,vec3(.34,.50,.64),vec3(.34,.40,.50),vec3(1.,1.,1.),vec3(.58,.78,.92));
-  if(pal==1) return cpal(t,vec3(.40,.24,.60),vec3(.38,.28,.48),vec3(1.,1.,1.),vec3(.70,.72,.88));
-  if(pal==2) return cpal(t,vec3(.14,.60,.58),vec3(.22,.38,.36),vec3(1.,1.,1.),vec3(.50,.72,.92));
-  if(pal==3) return cpal(t,vec3(.24,.34,.72),vec3(.32,.26,.54),vec3(1.,.85,1.),vec3(.60,.68,.95));
-  return         cpal(t,vec3(.67,.77,.89),vec3(.26,.25,.35),vec3(1.,1.,1.),vec3(.55,.76,.88));
+function resize(){
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
 }
-vec3 warmColor(float t){
-  return cpal(t,vec3(.60,.27,.37),vec3(.48,.36,.26),vec3(1.,.62,.42),vec3(0.,.12,.38));
+resize();
+window.addEventListener('resize', resize);
+
+const KICK_DURATION = 100; // ms — duração do círculo branco
+let   kickTime      = -999; // timestamp do último kick detectado
+
+function drawFrame(){
+  const W = canvas.width, H = canvas.height;
+
+  // Fundo preto sólido
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, W, H);
+
+  // Círculo branco — aparece no kick e desaparece em KICK_DURATION ms
+  const elapsed = performance.now() - kickTime;
+  if(elapsed < KICK_DURATION){
+    const alpha  = 1 - elapsed / KICK_DURATION; // linear: 1.0 → 0.0
+    const radius = Math.min(W, H) * 0.22;       // 22% da menor dimensão
+
+    ctx.beginPath();
+    ctx.arc(W/2, H/2, radius, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(255,255,255,${alpha.toFixed(3)})`;
+    ctx.fill();
+  }
 }
 
-void main(){
-  vec2 uv = (gl_FragCoord.xy*2. - u_res) / u_res.y;
 
-  // Rotação lenta — conduzida por mid acumulado
-  uv = rot2(uv, u_flow*0.25 + u_time*0.015);
-
-  // Warp de borda no kick — torce o espaço brevemente
-  float wt = u_time*1.6;
-  uv += vec2(
-    sin(uv.y*2.8 + wt      ) * u_warp*0.28,
-    cos(uv.x*2.2 + wt*1.25 ) * u_warp*0.28
-  );
-
-  float r   = length(uv);
-  float ang = atan(uv.y, uv.x);
-
-  // ── BLOB ORGÂNICO ───────────────────────────────────────────────────
-  // Raio base cresce com breath (bass) e pulsa no kick
-  float blobR = 0.30
-    + u_breath * 0.55     // respiração contínua com o bass
-    + u_pulse  * 0.30;    // expansão instantânea no kick
-
-  // Borda orgânica — distorção angular com flowAngle
-  // Faz a forma mudar enquanto a música toca
-  blobR += sin(ang*3. + u_flow*2.0 + u_time*.4) * 0.055;
-  blobR += sin(ang*5. + u_flow*3.5 + u_time*.7) * 0.028;
-  blobR += sin(ang*2. - u_flow*1.2            ) * 0.038;
-
-  // SDF: distância signed à borda do blob
-  float d = r - blobR;
-
-  // ── CAMADAS VISUAIS ─────────────────────────────────────────────────
-  float ct = ang/6.28318 + u_colorPhase + u_time*0.035;
-  vec3 cold = coldColor(ct, u_palette);
-  vec3 warm = warmColor(ct + 0.38 + u_time*0.03);
-
-  vec3 col = vec3(0.);
-
-  // Preenchimento interno — cor fria sólida
-  float fill = smoothstep(0.015, -0.03, d);
-  col += cold * 0.55 * fill;
-
-  // Glow suave na borda — sempre visível, pulsa com breath
-  float glowSoft  = exp(-abs(d) * 8.0);
-  col += cold * glowSoft * (1.0 + u_breath*2.0 + u_pulse*1.5);
-
-  // Borda nítida — linha fina e brilhante
-  float glowSharp = exp(-abs(d) * 28.0);
-  col += cold * glowSharp * 2.5;
-  col += warm * glowSharp * (u_pulse*2.0 + u_flash*1.5);
-
-  // Onda de expansão no kick — anel externo que se afasta
-  // Aparece só quando pulse está ativo, some rapidamente
-  float shockD = r - (blobR + u_pulse*0.55);
-  float shock  = exp(-abs(shockD) * 18.0) * u_pulse;
-  col += warm * shock * 2.5;
-
-  // ── FLASH DE SNARE ──────────────────────────────────────────────────
-  // Flash branco que ilumina todo o frame — inconfundível
-  col = mix(col, vec3(1.), clamp(u_flash*0.60, 0., 0.82));
-
-  // ── VIGNETTE ────────────────────────────────────────────────────────
-  col *= smoothstep(1.5, 0.05, r);
-
-  // ── TONEMAPPING ─────────────────────────────────────────────────────
-  col = aces(col * 1.80);
-
-  f_color = vec4(col, 1.);
-}`;
-
-// ── WebGL setup ─────────────────────────────────────────────────────
-const canvas = document.getElementById('glCanvas');
-const gl     = canvas.getContext('webgl2');
-
-function mkShader(type, src){
-  const s = gl.createShader(type);
-  gl.shaderSource(s, src); gl.compileShader(s);
-  if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s));
-  return s;
-}
-const prog = gl.createProgram();
-gl.attachShader(prog, mkShader(gl.VERTEX_SHADER,   VS));
-gl.attachShader(prog, mkShader(gl.FRAGMENT_SHADER, FS));
-gl.linkProgram(prog);
-
-const vbo = gl.createBuffer();
-gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]), gl.STATIC_DRAW);
-const vao = gl.createVertexArray(); gl.bindVertexArray(vao);
-const al  = gl.getAttribLocation(prog, 'in_vert');
-gl.enableVertexAttribArray(al); gl.vertexAttribPointer(al, 2, gl.FLOAT, false, 0, 0);
-
-const U = {};
-['u_time','u_res','u_breath','u_pulse','u_warp','u_flow','u_flash','u_colorPhase','u_palette']
-  .forEach(n => U[n] = gl.getUniformLocation(prog, n));
-
-function resize(){ canvas.width = innerWidth; canvas.height = innerHeight; gl.viewport(0,0,canvas.width,canvas.height); }
-resize(); window.addEventListener('resize', resize);
-
-// Força compilação do shader agora (não no primeiro frame do render loop)
-// Sem isso, o driver da GPU compila no primeiro drawArrays e congela ~2s
-gl.useProgram(prog); gl.bindVertexArray(vao);
-gl.uniform1f(U.u_time,0); gl.uniform2f(U.u_res,canvas.width,canvas.height);
-gl.uniform1f(U.u_breath,0); gl.uniform1f(U.u_pulse,0); gl.uniform1f(U.u_warp,0);
-gl.uniform1f(U.u_flow,0);  gl.uniform1f(U.u_flash,0); gl.uniform1f(U.u_colorPhase,0);
-gl.uniform1i(U.u_palette,0);
-gl.drawArrays(gl.TRIANGLES,0,6);
-
-
-// ═══════════════════════════════════════════════════════════════════════
-//  ÁUDIO — extrai canais brutos e detecta eventos discretos
-//  Nada daqui vai direto para o shader.
-// ═══════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
+//  ÁUDIO — pipeline intacta, sem alterações
+// ═══════════════════════════════════════════════════════════════════
 let audioCtx, analyser, sourceNode, audioBuffer;
 const FFT = 512;
 let freqData = null;
@@ -392,7 +203,6 @@ function startPlayback(){
   document.getElementById('idleMsg').classList.add('hidden');
 }
 
-// ── Helpers de banda ──────────────────────────────────────────────────
 function bandRMS(lo, hi){
   if(!analyser || !freqData) return 0;
   const bin = audioCtx.sampleRate / FFT;
@@ -412,7 +222,7 @@ function band(lo, hi){
   return i1>=i0 ? s/(i1-i0+1) : 0;
 }
 
-// ── Spectral Flux — detecção de kick ─────────────────────────────────
+// Spectral Flux — kick detection (sem alterações)
 const FLUX_HIST = 43;
 const fluxHistory = new Float32Array(FLUX_HIST);
 let fluxPtr=0, fluxSmooth=0, fluxPeak=0, prevFFT=null;
@@ -420,12 +230,7 @@ const BEAT_SENS=1.1, COOL_FRAMES=8;
 let beatCool=0, bpm=0;
 const bTimes=[];
 let bassI0=-1, bassI1=-1;
-
-// Valores que saem do processAudio() e alimentam o Motion State
-let rawBass=0, rawMid=0;
 let kickFired=false, kickMag=0;
-let snareFired=false, snareMag=0;
-let snareSmooth=0, snareCool=0;
 
 function processAudio(){
   if(!analyser || !freqData) return;
@@ -437,12 +242,8 @@ function processAudio(){
     bassI1 = Math.min(freqData.length-1, Math.floor(140/bin));
   }
 
-  // Canais brutos — NÃO vão para o shader diretamente
-  rawBass = bandRMS(20,  140);
-  rawMid  = bandRMS(140, 4000);
-  const rS = bandRMS(200, 800);
+  const rawBass = bandRMS(20, 140);
 
-  // ── Kick: spectral flux na banda de bass ──────────────────────────
   let flux = 0;
   if(prevFFT !== null){
     for(let i=bassI0; i<=bassI1; i++){
@@ -468,8 +269,10 @@ function processAudio(){
   if(beatCool > 0){ beatCool--; }
   else if(flux > threshold && bN > 0.08 && flux >= fluxPeak*0.95){
     kickFired = true;
-    kickMag   = Math.min(rawBass * 3.0, 1.0);  // magnitude real, não normalizada
+    kickMag   = Math.min(rawBass * 3.0, 1.0);
+    kickTime  = performance.now(); // registra o momento exato
     beatCool  = COOL_FRAMES;
+
     const now = performance.now(); bTimes.push(now);
     if(bTimes.length > 8) bTimes.shift();
     if(bTimes.length >= 2){
@@ -477,159 +280,35 @@ function processAudio(){
       const avgD = diffs.reduce((a,b)=>a+b,0)/diffs.length;
       if(avgD > 0) bpm = Math.round(60000/avgD);
     }
-    const bf = document.getElementById('beatFlash');
-    bf.classList.add('active'); setTimeout(()=>bf.classList.remove('active'), 55);
-  }
-
-  // ── Snare: peak detector na banda 200-800Hz ───────────────────────
-  // Evento quando snare sobe rapidamente acima de limiar com cooldown
-  const prevSnare = snareSmooth;
-  snareSmooth = prevSnare*0.55 + rS*0.45;
-  snareFired = false;
-  if(snareCool > 0){ snareCool--; }
-  else if(snareSmooth > 0.18 && snareSmooth > prevSnare * 1.25){
-    snareFired = true;
-    snareMag   = Math.min(snareSmooth * 2.8, 1.0);
-    snareCool  = 8;
   }
 }
 
 
-// ═══════════════════════════════════════════════════════════════════════
-//  MOTION STATE — camada física entre áudio e shader
-//
-//  O áudio injeta forças/impulsos.
-//  A física resolve o movimento a cada frame.
-//  O shader só vê posições resultantes, nunca valores de áudio.
-// ═══════════════════════════════════════════════════════════════════════
-
-// Cada variável: pos = posição atual, vel = velocidade atual
-const breath = { pos: 0, vel: 0 };  // bass spring → escala global
-const pulse  = { pos: 0, vel: 0 };  // kick impulso rápido → expansão
-const warp   = { pos: 0, vel: 0 };  // kick impulso lento  → domain warp
-const flash  = { pos: 0, vel: 0 };  // snare+kick impulso muito rápido → brilho
-let   flowAngle  = 0;               // mid acumulador → ângulo de rotação
-let   colorPhase = 0;               // eventos fortes → deriva de cor
-
-let peakBass = 0.01;  // pico dinâmico para normalizar o spring do bass
-
-function updateMotionState(){
-
-  // ── Kick → impulso em pulse + warp + flash + cor ─────────────────
-  if(kickFired){
-    pulse.vel  += kickMag * 3.50;   // impulso forte, decai rápido
-    warp.vel   += kickMag * 1.80;   // impulso médio, decai devagar
-    flash.vel  += kickMag * 1.80;
-    colorPhase += kickMag * 0.70;   // salto instantâneo de fase de cor
-  }
-
-  // ── Snare → impulso em flash (mais forte que kick) ────────────────
-  if(snareFired){
-    flash.vel += snareMag * 4.00;   // snare = flash branco claro e seco
-  }
-
-  // ── Bass → breath: spring com overshoot ──────────────────────────
-  // stiffness 0.09 = mola suave → movimento lento e orgânico
-  // damping 0.76 → overshoot de ~15% antes de estabilizar
-  peakBass = Math.max(peakBass * 0.998, rawBass);
-  const breathTarget = (rawBass / (peakBass + 1e-6)) * 0.62;
-  breath.vel += (breathTarget - breath.pos) * 0.13;
-  breath.pos += breath.vel;
-  breath.vel *= 0.78;
-
-  // ── Mid → flow: acumulador de ângulo ─────────────────────────────
-  // Nunca para completamente (0.005 base).
-  // Mid normalizado acelera — música empurra, visual gira mais.
-  const midNorm = Math.min(rawMid / 0.28, 1.0);
-  flowAngle += 0.005 + midNorm * 0.050;
-
-  // ── Pulse: decaimento rápido — punch seco ─────────────────────────
-  // vel *= 0.60 → decai em ~5 frames
-  // pos *= 0.80 → garante que não acumula indefinidamente
-  pulse.pos += pulse.vel;
-  pulse.vel *= 0.65;
-  pulse.pos  = Math.max(0, pulse.pos * 0.84);
-  pulse.pos  = Math.min(pulse.pos, 3.5);
-
-  // ── Warp: decaimento lento — distorção sustentada ────────────────
-  // vel *= 0.82 → decai em ~15 frames
-  warp.pos += warp.vel;
-  warp.vel *= 0.82;
-  warp.pos  = Math.max(0, warp.pos * 0.91);
-  warp.pos  = Math.min(warp.pos, 1.6);
-
-  // ── Flash: decaimento muito rápido — recorte seco ────────────────
-  // vel *= 0.40 → decai em ~2-3 frames
-  flash.pos += flash.vel;
-  flash.vel *= 0.40;
-  flash.pos  = Math.max(0, flash.pos * 0.65);
-  flash.pos  = Math.min(flash.pos, 2.2);
-}
-
-
-// ── Estado geral ─────────────────────────────────────────────────────
-let palette = 0, isPlaying = false, debugOn = false;
-
-// ── Render loop ──────────────────────────────────────────────────────
-let startT = null;
+// ═══════════════════════════════════════════════════════════════════
+//  RENDER LOOP
+// ═══════════════════════════════════════════════════════════════════
+let isPlaying = false;
 const barIds    = ['b1','b2','b3','b4','b5','b6','b7','b8'];
 const barRanges = [[20,60],[60,120],[120,250],[250,500],[500,1000],[1000,2500],[2500,6000],[6000,16000]];
 
-function render(ts){
+function render(){
   requestAnimationFrame(render);
-  if(!startT) startT = ts;
-  const latency = audioCtx ? (audioCtx.outputLatency||0)+(audioCtx.baseLatency||0) : 0;
-  const t = (ts - startT)/1000 + latency;
 
-  // 1. Áudio → eventos + valores brutos
   if(isPlaying) processAudio();
-  else { kickFired=false; snareFired=false; rawBass=0; rawMid=0; }
 
-  // 2. Motion State → física
-  updateMotionState();
-
-  // 3. HUD + barras
+  // HUD
   document.getElementById('bpmDisplay').textContent = bpm > 0 ? bpm : '---';
   if(analyser && freqData)
-    barRanges.forEach((r,i) => document.getElementById(barIds[i]).style.height =
-      Math.max(3, band(r[0],r[1])*180) + 'px');
+    barRanges.forEach((r,i) =>
+      document.getElementById(barIds[i]).style.height = Math.max(2, band(r[0],r[1])*120)+'px');
 
-  // 4. Debug overlay
-  if(debugOn){
-    document.getElementById('dB').textContent = breath.pos.toFixed(3);
-    document.getElementById('dP').textContent = pulse.pos.toFixed(3);
-    document.getElementById('dW').textContent = warp.pos.toFixed(3);
-    document.getElementById('dF').textContent = (flowAngle % 6.2832).toFixed(3);
-    document.getElementById('dL').textContent = flash.pos.toFixed(3);
-    document.getElementById('dK').textContent = kickFired  ? '●' : '·';
-    document.getElementById('dS').textContent = snareFired ? '●' : '·';
-  }
-
-  // 5. Shader — só recebe motion state
-  gl.useProgram(prog); gl.bindVertexArray(vao);
-  gl.uniform1f(U.u_time,       t);
-  gl.uniform2f(U.u_res,        canvas.width, canvas.height);
-  gl.uniform1f(U.u_breath,     breath.pos);
-  gl.uniform1f(U.u_pulse,      pulse.pos);
-  gl.uniform1f(U.u_warp,       warp.pos);
-  gl.uniform1f(U.u_flow,       flowAngle);
-  gl.uniform1f(U.u_flash,      flash.pos);
-  gl.uniform1f(U.u_colorPhase, colorPhase);
-  gl.uniform1i(U.u_palette,    palette);
-  gl.drawArrays(gl.TRIANGLES, 0, 6);
+  // Desenho — preto + círculo no kick
+  drawFrame();
 }
 requestAnimationFrame(render);
 
 
-// ── UI ───────────────────────────────────────────────────────────────
-document.querySelectorAll('.palette-swatch').forEach(sw => {
-  sw.addEventListener('click', () => {
-    palette = parseInt(sw.dataset.palette);
-    document.querySelectorAll('.palette-swatch').forEach(s =>
-      s.classList.toggle('active', parseInt(s.dataset.palette) === palette));
-  });
-});
-
+// ── UI ──────────────────────────────────────────────────────────────
 document.getElementById('startBtn').addEventListener('click', async () => {
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   setupAnalyser();
@@ -638,13 +317,13 @@ document.getElementById('startBtn').addEventListener('click', async () => {
     const osc = audioCtx.createOscillator(), g = audioCtx.createGain();
     osc.frequency.value = 80; g.gain.value = 0.04;
     osc.connect(g); g.connect(analyser); osc.start();
-    document.getElementById('trackName').textContent = 'coloque demo.mp3 em assets/audio/';
+    document.getElementById('trackName').textContent = 'demo.mp3 não encontrado';
     document.getElementById('trackDot').classList.remove('paused');
     isPlaying = true;
     document.getElementById('idleMsg').classList.add('hidden');
   }
   const ol = document.getElementById('startOverlay');
-  ol.classList.add('hidden'); setTimeout(() => ol.style.display='none', 650);
+  ol.classList.add('hidden'); setTimeout(() => ol.style.display='none', 550);
 });
 
 document.getElementById('idleMsg').addEventListener('click',
@@ -658,30 +337,17 @@ fi.addEventListener('change', async e => {
   if(!audioCtx){ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); setupAnalyser(); }
   await loadFile(f);
   const ol = document.getElementById('startOverlay');
-  ol.classList.add('hidden'); setTimeout(() => ol.style.display='none', 650);
+  ol.classList.add('hidden'); setTimeout(() => ol.style.display='none', 550);
 });
-fda.addEventListener('dragover',  e => { e.preventDefault(); fda.style.borderColor='rgba(0,200,255,.72)'; });
-fda.addEventListener('dragleave', ()  => { fda.style.borderColor='rgba(255,255,255,.28)'; });
+fda.addEventListener('dragover',  e => { e.preventDefault(); fda.style.borderColor='rgba(255,255,255,.5)'; });
+fda.addEventListener('dragleave', ()  => { fda.style.borderColor='rgba(255,255,255,.22)'; });
 fda.addEventListener('drop', async e => {
-  e.preventDefault(); fda.style.borderColor='rgba(255,255,255,.18)';
+  e.preventDefault(); fda.style.borderColor='rgba(255,255,255,.22)';
   const f = e.dataTransfer.files[0]; if(!f || !f.type.startsWith('audio/')) return;
   if(!audioCtx){ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); setupAnalyser(); }
   await loadFile(f);
   const ol = document.getElementById('startOverlay');
-  ol.classList.add('hidden'); setTimeout(() => ol.style.display='none', 650);
-});
-
-document.addEventListener('keydown', e => {
-  if(e.key==='p'||e.key==='P'){
-    palette = (palette+1)%5;
-    document.querySelectorAll('.palette-swatch').forEach(s =>
-      s.classList.toggle('active', parseInt(s.dataset.palette)===palette));
-  }
-  // D: debug overlay — motion state em tempo real
-  if(e.key==='d'||e.key==='D'){
-    debugOn = !debugOn;
-    document.getElementById('debug').classList.toggle('show', debugOn);
-  }
+  ol.classList.add('hidden'); setTimeout(() => ol.style.display='none', 550);
 });
 
 function showLoading(v){ document.getElementById('loadingMsg').classList.toggle('show', v); }
