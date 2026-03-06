@@ -61,10 +61,16 @@ resize(); window.addEventListener('resize', resize);
 
 // Variáveis de diagnóstico — preenchidas por processAudio()
 // Expostas globalmente para o renderer ler
-let diagKickBand  = 0;   // bandRMS(60,120) — nível da banda de kick
-let diagFlux      = 0;   // fluxSmooth atual
-let diagThreshold = 0;   // threshold calculado neste frame
+let diagKickBand  = 0;     // bandRMS(60,120) — nível da banda de kick
+let diagFlux      = 0;     // fluxSmooth atual
+let diagThreshold = 0;     // threshold calculado neste frame
+let diagFluxPeak  = 0;     // fluxPeak atual (linha de referência de pico)
+let diagBN        = 0;     // bN — normalização de bass
 let diagTrigger   = false; // true apenas no frame em que kick foi detectado
+// Sub-condições do trigger (para diagnóstico)
+let diagCond1     = false; // flux > threshold
+let diagCond2     = false; // bN > 0.08
+let diagCond3     = false; // flux >= fluxPeak * 0.95
 
 // Peak trackers para normalizar as barras
 let peakKickBand  = 0.01;
@@ -118,88 +124,79 @@ function drawDiag(){
   peakFlux      = Math.max(peakFlux      * 0.998, diagFlux);
   peakThreshold = Math.max(peakThreshold * 0.998, diagThreshold);
 
-  const metrics = [
-    {
-      label : 'KICK BAND',
-      sub   : '60–120 Hz',
-      value : diagKickBand,
-      peak  : peakKickBand,
-      color : '#00e5ff',
-      fmt   : v => v.toFixed(3),
-    },
-    {
-      label : 'FLUX',
-      sub   : 'spectral flux',
-      value : diagFlux,
-      peak  : peakFlux,
-      color : '#ffcc00',
-      fmt   : v => v.toFixed(4),
-    },
-    {
-      label : 'THRESHOLD',
-      sub   : 'limite atual',
-      value : diagThreshold,
-      peak  : peakThreshold,
-      color : '#ff6644',
-      fmt   : v => v.toFixed(4),
-    },
-    {
-      label : 'TRIGGER',
-      sub   : diagTrigger ? 'DISPAROU' : 'aguardando',
-      value : diagTrigger ? 1 : 0,
-      peak  : 1,
-      color : diagTrigger ? '#00ff88' : '#333',
-      fmt   : () => diagTrigger ? 'ON' : 'OFF',
-    },
-  ];
-
   ctx.save();
   ctx.globalAlpha = 0.95;
+  ctx.textBaseline = 'top';
+  ctx.textAlign    = 'left';
+
+  // ── Seção 1: barras de valores ──────────────────────────────────
+  const metrics = [
+    { label:'KICK BAND', sub:'60–120 Hz',      value:diagKickBand, peak:peakKickBand,  color:'#00e5ff', fmt: v=>v.toFixed(3) },
+    { label:'FLUX',      sub:'spectral flux',   value:diagFlux,     peak:peakFlux,      color:'#ffcc00', fmt: v=>v.toFixed(4) },
+    { label:'THRESHOLD', sub:'limite',          value:diagThreshold,peak:peakThreshold, color:'#ff6644', fmt: v=>v.toFixed(4) },
+  ];
 
   metrics.forEach((m, i) => {
-    const X = PAD;
-    const Y = PAD + i * LH * 1.5;
-
-    // Label
-    ctx.fillStyle    = 'rgba(255,255,255,0.35)';
-    ctx.font         = '10px Space Mono, monospace';
-    ctx.textAlign    = 'left';
-    ctx.textBaseline = 'top';
+    const X = PAD, Y = PAD + i * LH * 1.5;
+    ctx.fillStyle = 'rgba(255,255,255,0.30)';
+    ctx.font      = '10px Space Mono, monospace';
     ctx.fillText(`${m.label}  (${m.sub})`, X, Y);
-
-    // Valor numérico
     ctx.fillStyle = m.color;
     ctx.font      = 'bold 13px Space Mono, monospace';
     ctx.fillText(m.fmt(m.value), X + LPAD, Y);
-
-    // Barra de fundo
     const barY = Y + 16;
-    ctx.fillStyle = 'rgba(255,255,255,0.07)';
+    ctx.fillStyle = 'rgba(255,255,255,0.06)';
     ctx.fillRect(X, barY, BW, BH);
-
-    // Barra de valor
     const ratio = m.peak > 0 ? Math.min(m.value / m.peak, 1) : 0;
     ctx.fillStyle = m.color;
     ctx.fillRect(X, barY, BW * ratio, BH);
 
-    // Linha de threshold sobre a barra de FLUX
-    // Mostra visualmente onde está o threshold em relação ao flux
+    // Na barra do FLUX: duas linhas verticais — threshold e fluxPeak*0.95
     if(m.label === 'FLUX' && peakFlux > 0){
+      // Linha laranja = threshold
       const tx = X + BW * Math.min(diagThreshold / peakFlux, 1);
-      ctx.strokeStyle = '#ff6644';
-      ctx.lineWidth   = 2;
-      ctx.beginPath();
-      ctx.moveTo(tx, barY - 2);
-      ctx.lineTo(tx, barY + BH + 2);
-      ctx.stroke();
+      ctx.strokeStyle = '#ff6644'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(tx, barY-3); ctx.lineTo(tx, barY+BH+3); ctx.stroke();
+      // Linha branca = fluxPeak*0.95 (condição isPeak)
+      const px = X + BW * Math.min((diagFluxPeak*0.95) / peakFlux, 1);
+      ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(px, barY-3); ctx.lineTo(px, barY+BH+3); ctx.stroke();
     }
   });
 
-  // Legenda da linha vermelha
-  const legendY = PAD + 1 * LH * 1.5 + 16 + BH + 6;
-  ctx.fillStyle = 'rgba(255,100,68,0.6)';
+  // Legenda das linhas na barra FLUX
+  const legendY = PAD + 1 * LH * 1.5 + 16 + BH + 5;
   ctx.font      = '9px Space Mono, monospace';
-  ctx.fillText('▲ threshold', PAD, legendY);
+  ctx.fillStyle = 'rgba(255,100,68,0.7)';  ctx.fillText('▲ threshold',   PAD,        legendY);
+  ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fillText('▲ peak×0.95',  PAD + 90,   legendY);
+
+  // ── Seção 2: sub-condições do trigger ──────────────────────────
+  // Mostra cada condição separada — verde=ok, vermelho=bloqueando
+  const condY = PAD + 3 * LH * 1.5 + 10;
+  ctx.font      = '10px Space Mono, monospace';
+  ctx.fillStyle = 'rgba(255,255,255,0.30)';
+  ctx.fillText('CONDIÇÕES DO TRIGGER:', PAD, condY);
+
+  const conds = [
+    { label: 'flux > threshold',   ok: diagCond1 },
+    { label: 'bN > 0.08',          ok: diagCond2 },
+    { label: 'flux ≥ peak×0.95',   ok: diagCond3 },
+  ];
+  conds.forEach((c, i) => {
+    const cy = condY + 18 + i * 20;
+    ctx.fillStyle = c.ok ? '#00ff88' : '#ff3333';
+    ctx.font      = 'bold 11px Space Mono, monospace';
+    ctx.fillText(c.ok ? '✓' : '✗', PAD, cy);
+    ctx.fillStyle = c.ok ? 'rgba(255,255,255,0.6)' : 'rgba(255,80,80,0.7)';
+    ctx.font      = '11px Space Mono, monospace';
+    ctx.fillText(c.label, PAD + 20, cy);
+  });
+
+  // ── Seção 3: trigger indicator ──────────────────────────────────
+  const trigY = condY + 18 + 3 * 20 + 12;
+  ctx.font      = 'bold 13px Space Mono, monospace';
+  ctx.fillStyle = diagTrigger ? '#00ff88' : 'rgba(255,255,255,0.15)';
+  ctx.fillText('TRIGGER: ' + (diagTrigger ? 'ON ●' : 'OFF ○'), PAD, trigY);
 
   // BPM
   const bpmStr = bpm > 0 ? `${bpm} BPM` : '--- BPM';
@@ -321,9 +318,14 @@ function processAudio(){
   const threshold = Math.max(avg + variance*BEAT_SENS, avg*1.2);
   const bN = rawBass / (Math.max(rawBass*0.1, 0.01));
 
-  // Expõe flux e threshold para o renderer
+  // Expõe todas as variáveis de diagnóstico
   diagFlux      = flux;
   diagThreshold = threshold;
+  diagFluxPeak  = fluxPeak;
+  diagBN        = bN;
+  diagCond1     = flux > threshold;
+  diagCond2     = bN > 0.08;
+  diagCond3     = flux >= fluxPeak * 0.95;
   diagTrigger   = false;
 
   if(beatCool > 0){ beatCool--; }
