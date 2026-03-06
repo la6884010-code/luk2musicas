@@ -245,7 +245,7 @@ void main(){
   // ── 1. BREATH: escala orgânica ──────────────────────────────────────
   // Spring com overshoot: quando bass sobe, o visual respira para fora.
   // O overshoot faz a escala ultrapassar o target e voltar — parece vivo.
-  uv *= 1. + u_breath * 0.40;
+  uv *= 1. + u_breath * 0.60;
 
   // ── 2. FLOW: rotação por ângulo acumulado ───────────────────────────
   // u_flow nunca reseta — acumula ao longo da música.
@@ -272,8 +272,8 @@ void main(){
   // ── 4. PULSE: anéis se expandem no kick ─────────────────────────────
   // u_pulse desloca a fase dos anéis para fora = onda radial a cada kick.
   // Decai em ~5 frames: punch seco, não arrasta.
-  float ring0 = sin(r * 8.0  - u_time*2.00 - u_pulse*7.5) * .5 + .5;
-  float ring1 = sin(r * 4.8  - u_time*1.35 - u_pulse*5.0) * .5 + .5;
+  float ring0 = sin(r * 8.0  - u_time*2.00 - u_pulse*14.0) * .5 + .5;
+  float ring1 = sin(r * 4.8  - u_time*1.35 - u_pulse* 9.0) * .5 + .5;
   // Anéis finos: sem pulse — ficam estáveis como referência visual
   float ring2 = sin(r * 14.0 - u_time*3.60               ) * .5 + .5;
   // Ripple angular: usa u_flow — ondula junto com a rotação da música
@@ -299,7 +299,11 @@ void main(){
   col += warm * glo * u_flash * 0.82;
 
   // ── 7. BRILHO TOTAL: pulse ilumina o frame no kick ──────────────────
-  col *= 0.82 + u_pulse*0.58 + u_breath*0.26;
+  col *= 0.80 + u_pulse*1.10 + u_breath*0.38 + u_flash*0.40;
+
+  // ── 7b. SNARE: flash branco curto e seco ─────────────────────────────
+  // Recorte de luz inequívoco — diferente do glow quente do kick
+  col = mix(col, vec3(1.), clamp(u_flash*0.50, 0., 0.75));
 
   // ── 8. VIGNETTE ─────────────────────────────────────────────────────
   col *= smoothstep(1.68, 0.28, r);
@@ -482,10 +486,10 @@ function processAudio(){
   snareSmooth = prevSnare*0.55 + rS*0.45;
   snareFired = false;
   if(snareCool > 0){ snareCool--; }
-  else if(snareSmooth > 0.26 && snareSmooth > prevSnare * 1.40){
+  else if(snareSmooth > 0.18 && snareSmooth > prevSnare * 1.25){
     snareFired = true;
-    snareMag   = Math.min(snareSmooth * 2.2, 1.0);
-    snareCool  = 10;
+    snareMag   = Math.min(snareSmooth * 2.8, 1.0);
+    snareCool  = 8;
   }
 }
 
@@ -512,25 +516,25 @@ function updateMotionState(){
 
   // ── Kick → impulso em pulse + warp + flash + cor ─────────────────
   if(kickFired){
-    pulse.vel  += kickMag * 1.80;   // impulso forte, decai rápido
-    warp.vel   += kickMag * 1.00;   // impulso médio, decai devagar
-    flash.vel  += kickMag * 1.20;
-    colorPhase += kickMag * 0.55;   // salto instantâneo de fase de cor
+    pulse.vel  += kickMag * 3.50;   // impulso forte, decai rápido
+    warp.vel   += kickMag * 1.80;   // impulso médio, decai devagar
+    flash.vel  += kickMag * 1.80;
+    colorPhase += kickMag * 0.70;   // salto instantâneo de fase de cor
   }
 
   // ── Snare → impulso em flash (mais forte que kick) ────────────────
   if(snareFired){
-    flash.vel += snareMag * 2.20;   // snare = flash mais intenso
+    flash.vel += snareMag * 4.00;   // snare = flash branco claro e seco
   }
 
   // ── Bass → breath: spring com overshoot ──────────────────────────
   // stiffness 0.09 = mola suave → movimento lento e orgânico
   // damping 0.76 → overshoot de ~15% antes de estabilizar
   peakBass = Math.max(peakBass * 0.998, rawBass);
-  const breathTarget = (rawBass / (peakBass + 1e-6)) * 0.44;
-  breath.vel += (breathTarget - breath.pos) * 0.09;
+  const breathTarget = (rawBass / (peakBass + 1e-6)) * 0.62;
+  breath.vel += (breathTarget - breath.pos) * 0.13;
   breath.pos += breath.vel;
-  breath.vel *= 0.76;
+  breath.vel *= 0.78;
 
   // ── Mid → flow: acumulador de ângulo ─────────────────────────────
   // Nunca para completamente (0.005 base).
@@ -542,9 +546,9 @@ function updateMotionState(){
   // vel *= 0.60 → decai em ~5 frames
   // pos *= 0.80 → garante que não acumula indefinidamente
   pulse.pos += pulse.vel;
-  pulse.vel *= 0.60;
-  pulse.pos  = Math.max(0, pulse.pos * 0.80);
-  pulse.pos  = Math.min(pulse.pos, 2.8);
+  pulse.vel *= 0.65;
+  pulse.pos  = Math.max(0, pulse.pos * 0.84);
+  pulse.pos  = Math.min(pulse.pos, 3.5);
 
   // ── Warp: decaimento lento — distorção sustentada ────────────────
   // vel *= 0.82 → decai em ~15 frames
