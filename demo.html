@@ -40,8 +40,9 @@
   .start-btn span{position:relative;z-index:1;}
   .start-note{margin-top:32px;color:rgba(255,255,255,0.25);font-size:11px;letter-spacing:1px;text-align:center;}
   .file-drop-area{
-    margin-top:20px;padding:12px 28px;border:1px dashed rgba(255,255,255,0.35);border-radius:12px;
-    color:rgba(255,255,255,0.7);font-size:11px;letter-spacing:1px;cursor:pointer;transition:all 0.2s ease;text-align:center;
+    margin-top:20px;padding:12px 28px;border:1px dashed rgba(255,255,255,0.4);border-radius:12px;
+    color:rgba(255,255,255,0.9);font-size:11px;letter-spacing:1px;cursor:pointer;transition:all 0.2s ease;text-align:center;
+    background:rgba(255,255,255,0.08);
   }
   .file-drop-area:hover{border-color:rgba(120,170,255,0.5);color:rgba(255,255,255,0.6);background:rgba(120,170,255,0.06);}
   #fileInput{display:none;}
@@ -265,7 +266,7 @@
   <div class="start-note">ou escolha sua própria música para começar</div>
   <div class="file-drop-area" id="fileDropArea">
     ou arraste sua própria música aqui<br>
-    <span style="opacity:0.5;">mp3 · wav · ogg · flac</span>
+    <span style="color:rgba(255,255,255,0.6);">mp3 · wav · ogg · flac</span>
     <input type="file" id="fileInput" accept="audio/*">
   </div>
 </div>
