@@ -90,6 +90,14 @@ let waveAmp   = 0;
 
 let _spawnSmokeOnKick = false;
 
+// ─── Estado visual de campo radial ───────────────────────
+let energy   = 0;
+let rot1     = 0;
+let rot2     = 0;
+let hueShift = 0;
+const scans  = [];
+let scanCool = 0;
+
 // ── Física validada — calculada sempre, renderizada quando reativada ──
 let pulseVel   = 0;   // PULSO validado
 let pulsePos   = 0;
@@ -156,6 +164,8 @@ function applyKickImpulse(mag){
   }
   // Fumaça nasce no primeiro anel da cascata (anel 1)
   _spawnSmokeOnKick = true;
+  // Scan ring dispara no kick
+  scans.push({ r: 0.03, a: 0.90, spd: 0.010 + energy * 0.006 });
 }
 
 function stepPhysics(rawBass, rawMid){
@@ -219,6 +229,17 @@ function stepPhysics(rawBass, rawMid){
     g.alpha -= 0.012;
     if(g.alpha < 0) g.alpha = 0;
   }
+
+  // Campo radial — estado visual
+  energy   += ((rawBass + rawMid) * 0.55 - energy) * 0.15;
+  rot1     += 0.007 + energy * 0.010;
+  rot2     -= 0.004 + energy * 0.007;
+  hueShift  = (hueShift + 0.4) % 360;
+  for(let i = scans.length - 1; i >= 0; i--){
+    scans[i].r += scans[i].spd;
+    scans[i].a -= 0.016;
+    if(scans[i].a <= 0) scans.splice(i, 1);
+  }
 }
 
 // ─────────────────────────────────────────────────────────
@@ -232,54 +253,94 @@ function draw(){
   const cx = W / 2;
   const cy = H / 2;
   const S  = Math.min(W, H);
+  const e  = energy;
 
-  // Fundo preto
-  ctx.fillStyle = '#000';
+  // Trail cinematográfico
+  ctx.fillStyle = 'rgba(0,0,0,0.14)';
   ctx.fillRect(0, 0, W, H);
 
+  // Bloom central
+  const bloomR = S * (0.20 + e * 0.22);
+  const bloom  = ctx.createRadialGradient(cx, cy, 0, cx, cy, bloomR);
+  bloom.addColorStop(0,   `hsla(${hueShift},100%,90%,${(0.25 + e * 0.40).toFixed(2)})`);
+  bloom.addColorStop(0.4, `hsla(${(hueShift+40)%360},100%,60%,${(0.08 + e * 0.15).toFixed(2)})`);
+  bloom.addColorStop(1,   'rgba(0,0,0,0)');
+  ctx.fillStyle = bloom;
+  ctx.beginPath(); ctx.arc(cx, cy, bloomR, 0, TWO_PI); ctx.fill();
 
-  const breathScale = 1.0 + breathPos * 0.10;
-  const baseR       = S * RING_RADII[1] * breathScale;
-  const pOffset     = ringPos[1] * S * 0.038;
-
-  // Fantasmas — memória dos últimos 3 kicks (ciano)
-  for(const g of ghostData){
-    if(g.alpha <= 0) continue;
-    const r = Math.max(baseR + g.pos * S * 0.038, 2);
+  // Camada 1: 14 anéis orgânicos (folds=5, rot1)
+  const N1 = 14, folds1 = 5;
+  for(let i = 0; i < N1; i++){
+    const t     = (i + 0.5) / N1;
+    const baseR = t * S * 0.52;
+    const warpA = baseR * (0.07 + e * 0.13);
+    const alpha = (1 - t * 0.6) * (0.45 + e * 0.45);
+    const hue   = (hueShift + t * 140) % 360;
+    ctx.save();
+    ctx.shadowBlur  = 10 + e * 28;
+    ctx.shadowColor = `hsl(${hue},100%,60%)`;
+    ctx.strokeStyle = `hsla(${hue},100%,65%,${alpha.toFixed(2)})`;
+    ctx.lineWidth   = 1.2 + e * 1.5;
     ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, TWO_PI);
-    ctx.strokeStyle = `rgba(0,210,255,${g.alpha.toFixed(3)})`;
-    ctx.lineWidth   = 1.2;
-    ctx.stroke();
+    for(let k = 0; k <= 180; k++){
+      const a = (k / 180) * TWO_PI;
+      const r = baseR + warpA * Math.sin(folds1 * a + rot1 + t * Math.PI * 1.3);
+      k === 0 ? ctx.moveTo(cx + Math.cos(a)*r, cy + Math.sin(a)*r)
+              : ctx.lineTo(cx + Math.cos(a)*r, cy + Math.sin(a)*r);
+    }
+    ctx.closePath(); ctx.stroke(); ctx.restore();
   }
 
-  // Núcleo — círculo principal branco azulado
-  {
-    const r = Math.max(baseR + pOffset, 2);
+  // Camada 2: 9 anéis (folds=7, rot2 oposto)
+  const N2 = 9, folds2 = 7;
+  for(let i = 0; i < N2; i++){
+    const t     = (i + 0.3) / N2;
+    const baseR = t * S * 0.44 + S * 0.04;
+    const warpA = baseR * (0.05 + e * 0.09);
+    const alpha = (1 - t * 0.55) * (0.28 + e * 0.32);
+    const hue   = (hueShift + 180 + t * 100) % 360;
     ctx.save();
-    if(glowStrength > 0.01){
-      ctx.shadowBlur  = glowStrength * 28;
-      ctx.shadowColor = 'rgba(220,235,255,0.9)';
-    }
+    ctx.shadowBlur  = 8 + e * 20;
+    ctx.shadowColor = `hsl(${hue},100%,60%)`;
+    ctx.strokeStyle = `hsla(${hue},100%,65%,${alpha.toFixed(2)})`;
+    ctx.lineWidth   = 0.9 + e * 1.0;
     ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, TWO_PI);
-    ctx.strokeStyle = 'rgba(220,235,255,0.90)';
-    ctx.lineWidth   = 1.5;
+    for(let k = 0; k <= 180; k++){
+      const a = (k / 180) * TWO_PI;
+      const r = baseR + warpA * Math.sin(folds2 * a + rot2 + t * 2.1);
+      k === 0 ? ctx.moveTo(cx + Math.cos(a)*r, cy + Math.sin(a)*r)
+              : ctx.lineTo(cx + Math.cos(a)*r, cy + Math.sin(a)*r);
+    }
+    ctx.closePath(); ctx.stroke(); ctx.restore();
+  }
+
+  // Linhas radiais
+  const N_LINES = 20;
+  ctx.save();
+  ctx.shadowBlur  = 12 + e * 25;
+  ctx.shadowColor = `hsl(${(hueShift+60)%360},100%,70%)`;
+  ctx.lineWidth   = 0.7;
+  for(let i = 0; i < N_LINES; i++){
+    const a     = (i / N_LINES) * TWO_PI + rot1 * 0.35;
+    const alpha = 0.12 + e * 0.28;
+    ctx.strokeStyle = `hsla(${(hueShift + i*18)%360},100%,70%,${alpha.toFixed(2)})`;
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(a) * S * 0.03, cy + Math.sin(a) * S * 0.03);
+    ctx.lineTo(cx + Math.cos(a) * S * (0.18 + e * 0.28), cy + Math.sin(a) * S * (0.18 + e * 0.28));
     ctx.stroke();
+  }
+  ctx.restore();
+
+  // Scan rings — disparam no kick
+  for(const s of scans){
+    ctx.save();
+    ctx.shadowBlur  = 20 + e * 25;
+    ctx.shadowColor = `hsl(${(hueShift+200)%360},100%,70%)`;
+    ctx.strokeStyle = `hsla(${(hueShift+200)%360},100%,80%,${s.a.toFixed(2)})`;
+    ctx.lineWidth   = 1.5;
+    ctx.beginPath(); ctx.arc(cx, cy, s.r * S, 0, TWO_PI); ctx.stroke();
     ctx.restore();
   }
-
-  // Rastro radial — expande e some
-  if(trailAlpha > 0){
-    ctx.beginPath();
-    ctx.arc(cx, cy, trailRadius * S, 0, TWO_PI);
-    ctx.strokeStyle = `rgba(220,235,255,${trailAlpha.toFixed(3)})`;
-    ctx.lineWidth   = 1;
-    ctx.stroke();
-  }
-
-  // DESATIVADO: anel 0 (mid/roxo), anéis 2-5 (cascata)
-  // drawInnerRing / drawOuterRings
 }
 
 // ─────────────────────────────────────────────────────────
