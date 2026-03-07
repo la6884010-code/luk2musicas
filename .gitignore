@@ -1,1 +1,8 @@
 testes_validados.html
+assets/audio/
+*.mp3
+*.wav
+*.ogg
+*.flac
+*.aac
+*.m4a
