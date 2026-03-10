@@ -189,6 +189,83 @@
 }
 </style>
 
+<!-- O que você pode criar Section -->
+<section class="criar-section">
+  <div class="criar-container">
+    <h2 class="criar-title">O que você pode criar com o LUK2</h2>
+    <div class="criar-grid">
+      <div class="criar-card">
+        <h3>Visualizações reativas ao áudio</h3>
+        <p>Visualizações que respondem em tempo real à energia da música.</p>
+      </div>
+      <div class="criar-card">
+        <h3>Presets que respondem ao beat</h3>
+        <p>Estilos visuais que se transformam automaticamente com o ritmo.</p>
+      </div>
+      <div class="criar-card">
+        <h3>Exportação de visual em alta qualidade</h3>
+        <p>Renderização offline em alta resolução para vídeos e apresentações.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+.criar-section {
+  padding: 80px 20px;
+  background: linear-gradient(135deg, #0a0015 0%, #000a1a 100%);
+  border-top: 1px solid rgba(255, 0, 255, 0.12);
+  border-bottom: 1px solid rgba(0, 255, 255, 0.12);
+}
+.criar-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  text-align: center;
+}
+.criar-title {
+  font-size: 34px;
+  font-weight: 900;
+  margin: 0 0 40px;
+  background: linear-gradient(90deg, #ff00ff, #00ffff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.criar-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+.criar-card {
+  border-radius: 16px;
+  border: 1px solid rgba(0, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 24px;
+  text-align: left;
+  transition: transform .16s, background .2s, border-color .2s, box-shadow .2s;
+}
+.criar-card:hover {
+  transform: translateY(-4px);
+  background: rgba(0, 255, 255, 0.04);
+  border-color: rgba(0, 255, 255, 0.4);
+  box-shadow: 0 0 28px rgba(0, 255, 255, 0.15);
+}
+.criar-card h3 {
+  margin: 0 0 10px;
+  color: #00ffff;
+  font-weight: 700;
+  font-size: 16px;
+}
+.criar-card p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 14px;
+  line-height: 1.6;
+}
+@media (max-width: 900px) {
+  .criar-grid { grid-template-columns: 1fr; }
+}
+</style>
+
 <!-- PRO Section -->
 <section class="pro-section">
   <div class="pro-container">
