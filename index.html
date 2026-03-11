@@ -302,15 +302,9 @@
     </div>
     <div class="pro-right">
       <div class="pro-preview-box">
-        <div class="pro-preview-label">PRO — Em Breve</div>
-        <div class="pro-calm-visual">
-          <div class="calm-ring r1"></div>
-          <div class="calm-ring r2"></div>
-          <div class="calm-ring r3"></div>
-          <div class="calm-ring r4"></div>
-          <div class="calm-center"></div>
-        </div>
-        <p class="pro-preview-caption">Modo Calm — para suas músicas suaves</p>
+        <video autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block;">
+          <source src="assets/videos/LUK2.mp4" type="video/mp4">
+        </video>
       </div>
     </div>
   </div>
@@ -391,10 +385,11 @@
   background: rgba(255,255,255,0.03);
   border: 1px solid rgba(255,0,255,0.2);
   border-radius: 20px;
-  padding: 32px;
+  padding: 0;
   text-align: center;
   width: 100%;
   max-width: 380px;
+  overflow: hidden;
 }
 .pro-preview-label {
   font-size: 11px;
