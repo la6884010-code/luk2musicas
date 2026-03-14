@@ -250,50 +250,31 @@ def activate_preset(preset_name: str, state: dict, audio_analyzer=None) -> Prese
 
 
 # ══════════════════════════════════════════════════════════════════
-#  SELEÇÃO DE ARQUIVO DE ÁUDIO
+#  SELEÇÃO DE ARQUIVO DE ÁUDIO — janela do sistema
 # ══════════════════════════════════════════════════════════════════
-AUDIO_EXTENSIONS = ('.mp3', '.wav', '.ogg', '.flac', '.aac', '.m4a')
-
 def pick_audio_file() -> str:
-    script_dir = _base_dir()
+    import tkinter as tk
+    from tkinter import filedialog
 
-    # Busca recursiva em todas as subpastas
-    found_paths = []
-    for root, _, files in os.walk(script_dir):
-        for f in sorted(files):
-            if os.path.splitext(f)[1].lower() in AUDIO_EXTENSIONS:
-                found_paths.append(os.path.join(root, f))
-    found_paths.sort()
+    root = tk.Tk()
+    root.withdraw()                      # oculta a janela raiz do tkinter
+    root.wm_attributes('-topmost', True) # diálogo aparece na frente de tudo
 
-    if not found_paths:
-        print("\n╔══════════════════════════════════════════════════╗")
-        print("║  ⚠  Nenhum arquivo de áudio encontrado na pasta  ║")
-        print(f"║  Pasta: {script_dir[:44]:<44} ║")
-        print("║  Formatos suportados: mp3 wav ogg flac aac m4a   ║")
-        print("╚══════════════════════════════════════════════════╝\n")
-        raise SystemExit(1)
+    filepath = filedialog.askopenfilename(
+        title="Escolha sua música",
+        filetypes=[
+            ("Arquivos de áudio", "*.mp3 *.wav *.ogg *.flac *.aac *.m4a"),
+            ("Todos os arquivos", "*.*"),
+        ],
+    )
+    root.destroy()
 
-    print("\n╔══════════════════════════════════════════════════╗")
-    print("║          🎵  Arquivos de áudio encontrados        ║")
-    print("╠══════════════════════════════════════════════════╣")
-    for i, path in enumerate(found_paths, 1):
-        name = os.path.relpath(path, script_dir)
-        line = f"  [{i}]  {name}"
-        print(f"║  {line:<48}║")
-    print("╚══════════════════════════════════════════════════╝")
+    if not filepath:
+        print(Fore.YELLOW + "\n  Nenhum arquivo selecionado. Encerrando.\n")
+        raise SystemExit(0)
 
-    while True:
-        try:
-            choice = input(f"\nEscolha (1-{len(found_paths)}): ").strip()
-            idx = int(choice) - 1
-            if 0 <= idx < len(found_paths):
-                chosen = found_paths[idx]
-                print(f"\n  ▶  {os.path.relpath(chosen, script_dir)}\n")
-                return chosen
-            else:
-                print(f"  Digite um número entre 1 e {len(found_paths)}.")
-        except (ValueError, EOFError):
-            print(f"  Digite um número entre 1 e {len(found_paths)}.")
+    print(f"\n  ▶  {os.path.basename(filepath)}\n")
+    return filepath
 
 
 # ══════════════════════════════════════════════════════════════════
