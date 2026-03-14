@@ -6,3 +6,8 @@ assets/audio/
 *.flac
 *.aac
 *.m4a
+dist/
+build/
+*.zip
+__pycache__/
+*.pyc
