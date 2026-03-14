@@ -284,11 +284,12 @@
     <div class="pro-left">
       <div class="pro-badge-big">EM BREVE</div>
       <h2 class="pro-title">LUK2 PRO</h2>
-      <p class="pro-sub">O poder total do visualizador. Sem limites. Sem marca d'água. Com modos exclusivos que o FREE nunca vai ter.</p>
+      <p class="pro-sub">O poder total do visualizador. Do caos psicodélico à fluidez do modo calm, sem limites e sem marca d'água.</p>
       <ul class="pro-features">
         <li>✦ Render 4K offline — frame a frame</li>
         <li>✦ Sem marca d'água</li>
-        <li>✦ Modo Calm — partículas orgânicas para músicas suaves</li>
+        <li>✦ Modo Calm — visuais orgânicos para músicas suaves</li>
+        <li>✦ Modo Energy — visuais intensos e psicodélicos</li>
         <li>✦ Modos fractais exclusivos</li>
         <li>✦ Pacote de presets prioritários</li>
         <li>✦ Suporte prioritário</li>
@@ -301,10 +302,28 @@
       <a class="cta cta-big" href="https://go.hotmart.com/O104759492I" target="_blank">Quero Acesso Antecipado</a>
     </div>
     <div class="pro-right">
-      <div class="pro-preview-box">
-        <video autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block;">
-          <source src="assets/videos/LUK2.mp4" type="video/mp4">
-        </video>
+      <div class="pro-cards-stack">
+
+        <div class="pro-mode-card pro-mode-energy">
+          <video autoplay muted loop playsinline preload="metadata" class="pro-mode-video">
+            <source src="assets/videos/LUK2.mp4" type="video/mp4">
+          </video>
+          <div class="pro-mode-label">
+            <span class="pro-mode-dot energy-dot"></span>
+            Modo Energy
+          </div>
+        </div>
+
+        <div class="pro-mode-card pro-mode-calm">
+          <video autoplay muted loop playsinline preload="metadata" class="pro-mode-video">
+            <source src="assets/videos/borboleta.mp4" type="video/mp4">
+          </video>
+          <div class="pro-mode-label">
+            <span class="pro-mode-dot calm-dot"></span>
+            Modo Calm
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -380,59 +399,64 @@
 .pro-price-sep { color: rgba(255,255,255,0.3); font-size: 24px; }
 .pro-price small { font-size: 16px; font-weight: 400; opacity: 0.7; }
 
-.pro-right { flex: 1; display: flex; justify-content: center; }
-.pro-preview-box {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,0,255,0.2);
-  border-radius: 20px;
-  padding: 0;
-  text-align: center;
+.pro-right { flex: 1; display: flex; justify-content: center; align-items: center; }
+
+/* ── Cards empilhados ── */
+.pro-cards-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   width: 100%;
   max-width: 380px;
-  overflow: hidden;
 }
-.pro-preview-label {
-  font-size: 11px;
-  letter-spacing: 3px;
-  color: rgba(255,0,255,0.7);
-  margin-bottom: 24px;
-  text-transform: uppercase;
-}
-.pro-calm-visual {
+.pro-mode-card {
   position: relative;
-  width: 200px;
-  height: 200px;
-  margin: 0 auto 24px;
+  border-radius: 18px;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.5);
+}
+.pro-mode-energy {
+  border: 1px solid rgba(255,0,255,0.35);
+  box-shadow: 0 0 24px rgba(255,0,255,0.12), 0 4px 32px rgba(0,0,0,0.5);
+}
+.pro-mode-calm {
+  border: 1px solid rgba(0,255,200,0.3);
+  box-shadow: 0 0 24px rgba(0,255,200,0.1), 0 4px 32px rgba(0,0,0,0.5);
+}
+.pro-mode-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.pro-mode-label {
+  position: absolute;
+  bottom: 10px;
+  left: 12px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.85);
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  padding: 4px 10px;
+  border-radius: 20px;
 }
-.calm-ring {
-  position: absolute;
+.pro-mode-dot {
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  border: 1px solid;
-  animation: pulse-calm 3s ease-in-out infinite;
+  flex-shrink: 0;
 }
-.r1 { width: 200px; height: 200px; border-color: rgba(255,0,255,0.2); animation-delay: 0s; }
-.r2 { width: 150px; height: 150px; border-color: rgba(150,0,255,0.3); animation-delay: 0.5s; }
-.r3 { width: 100px; height: 100px; border-color: rgba(0,150,255,0.4); animation-delay: 1s; }
-.r4 { width: 50px; height: 50px; border-color: rgba(0,255,255,0.5); animation-delay: 1.5s; }
-.calm-center {
-  width: 20px; height: 20px;
-  border-radius: 50%;
-  background: radial-gradient(circle, #fff, #00ffff);
-  box-shadow: 0 0 20px #00ffff, 0 0 40px rgba(0,255,255,0.3);
-  animation: pulse-calm 2s ease-in-out infinite;
-}
-@keyframes pulse-calm {
-  0%, 100% { transform: scale(1); opacity: 0.6; }
-  50% { transform: scale(1.05); opacity: 1; }
-}
-.pro-preview-caption {
-  color: rgba(255,255,255,0.5);
-  font-size: 13px;
-  margin: 0;
-}
+.energy-dot { background: #ff00ff; box-shadow: 0 0 6px #ff00ff; }
+.calm-dot   { background: #00ffc8; box-shadow: 0 0 6px #00ffc8; }
 @media (max-width: 768px) {
   .pro-container { flex-direction: column; gap: 40px; }
   .pro-title { font-size: 36px; }
