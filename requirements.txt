@@ -1,0 +1,12 @@
+pygame>=2.0.0
+moderngl>=5.8.0
+numpy>=1.20.0
+colorama>=0.4.4
+soundfile>=0.10.0
+PyInstaller>=5.13.0
+
+# Opcional — gravação ao vivo (descomente se quiser suporte a cv2)
+# opencv-python>=4.0.0
+
+# Opcional — túnel 3D Panda3D (descomente se quiser suporte)
+# panda3d>=1.10.14

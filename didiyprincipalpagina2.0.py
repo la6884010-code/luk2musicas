@@ -15,6 +15,7 @@ import multiprocessing
 import math
 import random
 import os
+import sys
 import subprocess
 import time
 import json
@@ -44,6 +45,18 @@ try:
 except ImportError:
     PANDA3D_OK = False
     ShowBase = object
+
+# ── Diretório base — funciona em script Python E em .exe PyInstaller ──────────
+def _base_dir() -> str:
+    """
+    Retorna o diretório onde buscar/gravar arquivos do usuário (áudio, presets.json).
+    - Script normal  → pasta do .py
+    - Executável PyInstaller → pasta do .exe  (NÃO sys._MEIPASS, que é read-only/temp)
+    """
+    if getattr(sys, 'frozen', False):
+        return os.path.dirname(sys.executable)
+    return os.path.dirname(os.path.abspath(__file__))
+
 
 # --- Parâmetros ---
 WIN_SIZE = (1280, 720)
@@ -129,7 +142,7 @@ PRESETS_DEFAULT: dict[str, Preset] = {
 }
 
 # ── Caminho do JSON de presets do usuário ─────────────────────────
-PRESETS_JSON_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "presets.json")
+PRESETS_JSON_PATH = os.path.join(_base_dir(), "presets.json")
 
 # ── Presets do usuário e dicionário mesclado (populados em runtime) ──
 USER_PRESETS:    dict[str, Preset] = {}
@@ -242,7 +255,7 @@ def activate_preset(preset_name: str, state: dict, audio_analyzer=None) -> Prese
 AUDIO_EXTENSIONS = ('.mp3', '.wav', '.ogg', '.flac', '.aac', '.m4a')
 
 def pick_audio_file() -> str:
-    script_dir = os.path.dirname(os.path.abspath(__file__))
+    script_dir = _base_dir()
 
     # Busca recursiva em todas as subpastas
     found_paths = []
@@ -1496,19 +1509,59 @@ def main():
         shared_panda[5] = 0.0
         print("  🚇 Túnel 3D encerrando…")
 
-    pygame.init()
-    pygame.display.set_caption("◈ Fractal Visualizer — Elite v3.3")
-    screen = pygame.display.set_mode(WIN_SIZE, pygame.OPENGL | pygame.DOUBLEBUF)
-    ctx    = moderngl.create_context()
+    # ── Janela + OpenGL ────────────────────────────────────────────
+    try:
+        pygame.init()
+        pygame.display.set_caption("◈ Fractal Visualizer — Elite v3.3")
+        screen = pygame.display.set_mode(WIN_SIZE, pygame.OPENGL | pygame.DOUBLEBUF)
+    except Exception as e:
+        print(Fore.RED + Style.BRIGHT + f"\n❌ ERRO: Falha ao inicializar janela gráfica.\n   {e}")
+        print(Fore.YELLOW + "   Verifique se os drivers de vídeo estão atualizados.")
+        input("\n   Pressione ENTER para sair.")
+        return
 
-    audio     = FileAudioAnalyzer(audio_path)
+    # ── Contexto OpenGL 3.3 ────────────────────────────────────────
+    try:
+        ctx = moderngl.create_context()
+    except Exception as e:
+        print(Fore.RED + Style.BRIGHT + f"\n❌ ERRO: Falha ao criar contexto OpenGL.\n   {e}")
+        print(Fore.YELLOW + "   Este app requer OpenGL 3.3 ou superior.")
+        print(Fore.YELLOW + "   Atualize os drivers da GPU (Intel/NVIDIA/AMD).")
+        print(Fore.YELLOW + "   GPUs Intel HD integradas antigas podem não ter suporte.")
+        pygame.quit()
+        input("\n   Pressione ENTER para sair.")
+        return
+
+    # ── Áudio ──────────────────────────────────────────────────────
+    try:
+        audio = FileAudioAnalyzer(audio_path)
+    except ImportError as e:
+        print(Fore.RED + Style.BRIGHT + f"\n❌ ERRO: Dependência de áudio ausente.\n   {e}")
+        pygame.quit()
+        input("\n   Pressione ENTER para sair.")
+        return
+    except Exception as e:
+        print(Fore.RED + Style.BRIGHT + f"\n❌ ERRO: Falha ao carregar arquivo de áudio.\n   {e}")
+        pygame.quit()
+        input("\n   Pressione ENTER para sair.")
+        return
+
     camera    = CinematicCamera()
     reactions = InstrumentReactions()
 
-    prog  = ctx.program(vertex_shader=VERTEX_SHADER,  fragment_shader=FRAGMENT_SHADER)
-    gprog = ctx.program(vertex_shader=GLOW_VERT,      fragment_shader=GLOW_FRAG)
-    cprog = ctx.program(vertex_shader=GLOW_VERT,      fragment_shader=COMPOSITE_FRAG)
-    hprog = ctx.program(vertex_shader=GLOW_VERT,      fragment_shader=HUD_FRAG)
+    # ── Compilação dos shaders GLSL ────────────────────────────────
+    try:
+        prog  = ctx.program(vertex_shader=VERTEX_SHADER,  fragment_shader=FRAGMENT_SHADER)
+        gprog = ctx.program(vertex_shader=GLOW_VERT,      fragment_shader=GLOW_FRAG)
+        cprog = ctx.program(vertex_shader=GLOW_VERT,      fragment_shader=COMPOSITE_FRAG)
+        hprog = ctx.program(vertex_shader=GLOW_VERT,      fragment_shader=HUD_FRAG)
+    except Exception as e:
+        print(Fore.RED + Style.BRIGHT + f"\n❌ ERRO: Falha ao compilar shaders GLSL.\n   {e}")
+        print(Fore.YELLOW + "   Sua GPU pode não suportar GLSL 330 / OpenGL 3.3.")
+        audio.close()
+        pygame.quit()
+        input("\n   Pressione ENTER para sair.")
+        return
 
     vao  = make_quad(ctx, prog)
     gvao = make_quad(ctx, gprog)
@@ -1993,7 +2046,7 @@ def main():
 #  ENTRY POINT
 # ══════════════════════════════════════════════════════════════════
 if __name__ == "__main__":
-    import sys
+    multiprocessing.freeze_support()  # obrigatório para PyInstaller + multiprocessing no Windows
 
     if len(sys.argv) >= 2 and sys.argv[1] == 'render':
         if len(sys.argv) < 5:
