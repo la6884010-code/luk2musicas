@@ -284,12 +284,12 @@
     <div class="pro-left">
       <div class="pro-badge-big">EM BREVE</div>
       <h2 class="pro-title">LUK2 PRO</h2>
-      <p class="pro-sub">O poder total do visualizador. Do caos psicodélico à fluidez do modo calm, sem limites e sem marca d'água.</p>
+      <p class="pro-sub">O poder total do visualizador. Do impacto psicodélico à fluidez do modo calm, sem limites e sem marca d'água.</p>
       <ul class="pro-features">
         <li>✦ Render 4K offline — frame a frame</li>
         <li>✦ Sem marca d'água</li>
-        <li>✦ Modo Calm — visuais orgânicos para músicas suaves</li>
         <li>✦ Modo Energy — visuais intensos e psicodélicos</li>
+        <li>✦ Modo Calm — visuais orgânicos para músicas suaves</li>
         <li>✦ Modos fractais exclusivos</li>
         <li>✦ Pacote de presets prioritários</li>
         <li>✦ Suporte prioritário</li>
@@ -315,10 +315,11 @@
         </div>
 
         <div class="pro-mode-card pro-mode-calm">
-          <video autoplay muted loop playsinline preload="metadata" class="pro-mode-video">
+          <video autoplay muted loop playsinline preload="metadata" class="pro-mode-video pro-mode-video-calm">
             <source src="assets/videos/borboleta.mp4" type="video/mp4">
           </video>
-          <div class="pro-mode-label">
+          <div class="calm-overlay"></div>
+          <div class="pro-mode-label calm-label">
             <span class="pro-mode-dot calm-dot"></span>
             Modo Calm
           </div>
@@ -418,18 +419,40 @@
   box-shadow: 0 4px 32px rgba(0,0,0,0.5);
 }
 .pro-mode-energy {
-  border: 1px solid rgba(255,0,255,0.35);
-  box-shadow: 0 0 24px rgba(255,0,255,0.12), 0 4px 32px rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,0,255,0.45);
+  box-shadow:
+    0 0 0 1px rgba(255,0,255,0.08),
+    0 0 32px rgba(255,0,255,0.18),
+    0 6px 40px rgba(0,0,0,0.6);
 }
 .pro-mode-calm {
-  border: 1px solid rgba(0,255,200,0.3);
-  box-shadow: 0 0 24px rgba(0,255,200,0.1), 0 4px 32px rgba(0,0,0,0.5);
+  border: 1px solid rgba(0,220,255,0.45);
+  box-shadow:
+    0 0 0 1px rgba(0,220,255,0.08),
+    0 0 32px rgba(0,200,255,0.18),
+    0 6px 40px rgba(0,0,0,0.6);
 }
 .pro-mode-video {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+}
+.pro-mode-video-calm {
+  object-position: center center;
+  filter: brightness(1.1) saturate(1.15);
+}
+/* overlay suave que valoriza o vídeo calm sem escurecer demais */
+.calm-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    160deg,
+    rgba(0,180,255,0.06) 0%,
+    rgba(0,0,0,0) 50%,
+    rgba(0,120,180,0.08) 100%
+  );
+  pointer-events: none;
 }
 .pro-mode-label {
   position: absolute;
@@ -442,12 +465,17 @@
   font-weight: 700;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.85);
-  background: rgba(0,0,0,0.45);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  color: rgba(255,255,255,0.9);
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   padding: 4px 10px;
   border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.07);
+}
+/* label calm com borda ciano sutil */
+.calm-label {
+  border-color: rgba(0,220,255,0.2);
 }
 .pro-mode-dot {
   width: 7px;
@@ -455,8 +483,8 @@
   border-radius: 50%;
   flex-shrink: 0;
 }
-.energy-dot { background: #ff00ff; box-shadow: 0 0 6px #ff00ff; }
-.calm-dot   { background: #00ffc8; box-shadow: 0 0 6px #00ffc8; }
+.energy-dot { background: #ff00ff; box-shadow: 0 0 7px #ff00ff; }
+.calm-dot   { background: #00dcff; box-shadow: 0 0 7px #00dcff; }
 @media (max-width: 768px) {
   .pro-container { flex-direction: column; gap: 40px; }
   .pro-title { font-size: 36px; }
