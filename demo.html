@@ -223,7 +223,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0c0d15;color:#fff;f
 .bpm-lbl{font-size:8px;color:rgba(255,255,255,0.28);letter-spacing:2px;}
 .bars{display:flex;align-items:flex-end;gap:2px;height:24px;}
 .bars-left{transform:scaleX(-1);}
-.bar{width:3px;border-radius:2px;background:linear-gradient(to top,rgba(220,40,0,0.90),rgba(255,140,0,0.80));min-height:2px;transition:height 0.04s ease;}
+.bar{width:3px;border-radius:2px;background:linear-gradient(to top,rgba(200,0,0,0.95),rgba(255,30,30,0.85));min-height:2px;transition:height 0.04s ease;}
 
 /* ══════════════════════════════
    RIGHT PANEL
@@ -1028,8 +1028,8 @@ function render(ts){
   // BPM + bars
   document.getElementById('bpmDisplay').textContent=bpm>0?bpm:'---';
   if(analyser&&freqData){
-    barRanges.forEach((r,i)=>document.getElementById(barIds[i]).style.height=Math.max(2,band(r[0],r[1])*80)+'px');
-    barRanges.forEach((r,i)=>document.getElementById(wlIds[i]).style.height=Math.max(2,band(r[0],r[1])*80)+'px');
+    barRanges.forEach((r,i)=>document.getElementById(barIds[i]).style.height=Math.max(2,band(r[0],r[1])*70)+'px');
+    barRanges.forEach((r,i)=>document.getElementById(wlIds[i]).style.height=Math.max(2,band(r[0],r[1])*70)+'px');
   }
 
   // Camera Move effect
