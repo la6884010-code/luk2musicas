@@ -1,5 +1,5 @@
 :root{
-  --bg: #07091a;
+  --bg: #161c50; /* TESTE 20% luminosidade */
   --panel: rgba(255,255,255,0.05);
   --panel2: rgba(255,255,255,0.09);
   --text: rgba(255,255,255,0.95);
@@ -47,7 +47,7 @@ body::before{
   display:flex; align-items:center; justify-content:space-between;
   padding: 14px 20px;
   border-bottom: 1px solid rgba(255,0,255,0.25);
-  background: rgba(18,20,48,0.92);
+  background: rgba(30,36,90,0.92); /* TESTE 20% */
   backdrop-filter: blur(14px);
 }
 
