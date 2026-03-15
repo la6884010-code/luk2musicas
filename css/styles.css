@@ -555,6 +555,25 @@ body::before{
   position: relative;
   overflow: hidden;
   background: #000;
+  border-bottom: 1px solid rgba(255, 0, 255, 0.18);
+}
+
+/* fade inferior: funde o iframe com o fundo da landing */
+.experience-section::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 120px;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 8, 0.72) 65%,
+    #000008 100%
+  );
+  pointer-events: none;
+  z-index: 5;
 }
 
 .experience-iframe {
