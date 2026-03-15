@@ -523,17 +523,40 @@ vec3 aces(vec3 x){return clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),0.,1.);}
 vec3 pal(float t,float co,float intensity){
   t+=co;vec3 a,b,c,d;
   if(u_palette==0){
-    float f=smoothstep(.05,.6,intensity*2.5)+u_beat*.5;
-    a=mix(vec3(.5,.5,.5),vec3(.6,.2,.05),f);b=mix(vec3(.5,.5,.5),vec3(.5,.4,.1),f);
-    c=mix(vec3(1.,1.,1.),vec3(1.,.6,0.),f);d=mix(vec3(.3,.45,.6),vec3(0.,.1,.2),f);
+    // Energy: laranja → azul | bass amplifica laranja, high amplifica azul
+    // t=0 → laranja (R=0.94,G=0.30,B=0) | t=0.5 → azul neon (R=0,G=0,B=0.78)
+    a=vec3(0.06,0.03,0.08);
+    b=vec3(0.88,0.30+u_bass*.30,0.70+u_high*.20);
+    c=vec3(1.0,1.0,1.0);
+    d=vec3(0.0,0.08,0.5);
   }else if(u_palette==1){
-    b=vec3(.5+u_bass*.4,.2,0.);a=vec3(.3,0.,.5+u_high*.4);c=vec3(1.,1.,1.);d=vec3(0.,.33,.67);
+    // Hypnosis: magenta neon + azul | R e B em fase, G suprimido
+    // t=0 → magenta (R+B) | t=0.5 → escuro | bass→R, high→B
+    a=vec3(0.05,0.0,0.15);
+    b=vec3(0.50+u_bass*.40,0.08,0.85+u_high*.15);
+    c=vec3(1.0,1.0,1.0);
+    d=vec3(0.0,0.5,0.0);
   }else if(u_palette==2){
-    a=vec3(.8,.7+u_mid*.2,.9);b=vec3(.2,.3,.2+u_high*.3);c=vec3(1.,.8,.9);d=vec3(.1,.4,.2);
+    // Neon: ciano ↔ rosa | R invertido em relação a G e B
+    // t=0 → ciano (R=0,G=0.25,B=1.0) | t=0.5 → rosa (R=0.89,G=0,B=0)
+    a=vec3(0.07,0.07,0.12);
+    b=vec3(0.82,0.18+u_mid*.20,0.88+u_high*.12);
+    c=vec3(1.0,0.7,1.0);
+    d=vec3(0.5,0.0,0.0);
   }else if(u_palette==3){
-    a=vec3(.5,.5,.5);b=vec3(.5+u_bass*.4,.3,.5+u_high*.4);c=vec3(2.,1.+u_mid*1.5,0.);d=vec3(.5,.2,.25);
+    // Psychedelic: magenta elétrico + azul profundo | G mínimo
+    // t=0 → magenta (R+B altos) | t=0.5 → escuro | bass→R, high→B
+    a=vec3(0.08,0.02,0.10);
+    b=vec3(0.85+u_bass*.40,0.10,0.80+u_high*.35);
+    c=vec3(1.0,0.5,1.0);
+    d=vec3(0.0,0.5,0.0);
   }else{
-    a=vec3(0.,.5+u_bass*.3,.4);b=vec3(.1,.4,.3+u_high*.3);c=vec3(.5,1.,.8);d=vec3(0.,.15,.5);
+    // Galaxy: ciano → azul profundo | fundo escuro, sem verde isolado
+    // t=0 → ciano (G+B) | t=0.25 → azul profundo | t=0.5 → escuro
+    a=vec3(0.02,0.05,0.18);
+    b=vec3(0.08,0.42+u_bass*.28,0.80+u_high*.18);
+    c=vec3(0.5,1.0,0.8);
+    d=vec3(0.5,0.0,0.0);
   }
   b*=1.5+intensity*1.2;
   return a+b*cos(6.28318*(c*t+d));
