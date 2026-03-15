@@ -453,7 +453,12 @@ input[type=range]::-moz-range-thumb{
               <div class="bar" id="wl19"></div><div class="bar" id="wl20"></div>
               <div class="bar" id="wl21"></div><div class="bar" id="wl22"></div>
               <div class="bar" id="wl23"></div><div class="bar" id="wl24"></div>
-              <div class="bar" id="wl25"></div>
+              <div class="bar" id="wl25"></div><div class="bar" id="wl26"></div>
+              <div class="bar" id="wl27"></div><div class="bar" id="wl28"></div>
+              <div class="bar" id="wl29"></div><div class="bar" id="wl30"></div>
+              <div class="bar" id="wl31"></div><div class="bar" id="wl32"></div>
+              <div class="bar" id="wl33"></div><div class="bar" id="wl34"></div>
+              <div class="bar" id="wl35"></div>
             </div>
           </div>
           <div class="pb-btns">
@@ -475,7 +480,12 @@ input[type=range]::-moz-range-thumb{
               <div class="bar" id="b19"></div><div class="bar" id="b20"></div>
               <div class="bar" id="b21"></div><div class="bar" id="b22"></div>
               <div class="bar" id="b23"></div><div class="bar" id="b24"></div>
-              <div class="bar" id="b25"></div>
+              <div class="bar" id="b25"></div><div class="bar" id="b26"></div>
+              <div class="bar" id="b27"></div><div class="bar" id="b28"></div>
+              <div class="bar" id="b29"></div><div class="bar" id="b30"></div>
+              <div class="bar" id="b31"></div><div class="bar" id="b32"></div>
+              <div class="bar" id="b33"></div><div class="bar" id="b34"></div>
+              <div class="bar" id="b35"></div>
             </div>
             <div class="track-dot paused" id="trackDot"></div>
             <div class="track-name" id="trackName">Nenhuma música</div>
@@ -970,9 +980,12 @@ function buildColors(){
 //  Render Loop
 // ═══════════════════════════════════════════
 let startT=null,curT=0;
-const barIds=['b1','b2','b3','b4','b5','b6','b7','b8','b9','b10','b11','b12','b13','b14','b15','b16','b17','b18','b19','b20','b21','b22','b23','b24','b25'];
-const wlIds=['wl1','wl2','wl3','wl4','wl5','wl6','wl7','wl8','wl9','wl10','wl11','wl12','wl13','wl14','wl15','wl16','wl17','wl18','wl19','wl20','wl21','wl22','wl23','wl24','wl25'];
-const barRanges=[[20,26],[26,34],[34,45],[45,58],[58,76],[76,99],[99,129],[129,169],[169,221],[221,288],[288,376],[376,492],[492,642],[642,838],[838,1095],[1095,1430],[1430,1867],[1867,2438],[2438,3185],[3185,4160],[4160,5432],[5432,7095],[7095,9266],[9266,12101],[12101,16000]];
+const barIds=['b1','b2','b3','b4','b5','b6','b7','b8','b9','b10','b11','b12','b13','b14','b15','b16','b17','b18','b19','b20','b21','b22','b23','b24','b25','b26','b27','b28','b29','b30','b31','b32','b33','b34','b35'];
+const wlIds=['wl1','wl2','wl3','wl4','wl5','wl6','wl7','wl8','wl9','wl10','wl11','wl12','wl13','wl14','wl15','wl16','wl17','wl18','wl19','wl20','wl21','wl22','wl23','wl24','wl25','wl26','wl27','wl28','wl29','wl30','wl31','wl32','wl33','wl34','wl35'];
+const barRanges=[
+  [20,40],[40,70],[70,110],[110,180],[180,280],[280,420],[420,600],[600,900],[900,1400],[1400,2200],[2200,3500],[3500,5500],[5500,9000],[9000,16000],
+  [20,32],[32,50],[50,75],[75,100],[100,140],[140,190],[190,260],[260,350],[350,460],[460,610],[610,810],[810,1070],[1070,1420],[1420,1880],[1880,2490],[2490,3300],[3300,4360],[4360,5760],[5760,7620],[7620,10080],[10080,16000]
+];
 
 function render(ts){
   requestAnimationFrame(render);
