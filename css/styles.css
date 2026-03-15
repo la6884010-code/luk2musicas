@@ -1,9 +1,9 @@
 :root{
-  --bg: #000008;
-  --panel: rgba(255,255,255,0.04);
-  --panel2: rgba(255,255,255,0.07);
+  --bg: #07091a;
+  --panel: rgba(255,255,255,0.05);
+  --panel2: rgba(255,255,255,0.09);
   --text: rgba(255,255,255,0.95);
-  --muted: rgba(255,255,255,0.58);
+  --muted: rgba(255,255,255,0.72);
   --stroke: rgba(255,0,255,0.18);
   --glow: rgba(255,0,255,0.35);
   --magenta: #ff00ff;
@@ -31,9 +31,11 @@ body::before{
   background:
     radial-gradient(circle at 15% 25%, rgba(255,0,255,0.22), transparent 50%),
     radial-gradient(circle at 75% 60%, rgba(0,255,255,0.14), transparent 55%),
-    radial-gradient(circle at 50% 10%, rgba(140,0,255,0.16), transparent 50%);
+    radial-gradient(circle at 50% 10%, rgba(140,0,255,0.16), transparent 50%),
+    radial-gradient(circle at 20% 80%, rgba(100,0,200,0.14), transparent 48%),
+    radial-gradient(circle at 80% 85%, rgba(0,180,255,0.10), transparent 45%);
   filter: blur(60px);
-  opacity: 0.9;
+  opacity: 0.85;
   pointer-events: none;
   z-index: -1;
   animation: luk2-float 10s ease-in-out infinite;
@@ -199,7 +201,7 @@ body::before{
 /* ── IMPACT ─────────────────────────── */
 .impact{
   padding:80px 20px; text-align:center;
-  background: linear-gradient(135deg, #07000f, #000a1a);
+  background: linear-gradient(135deg, #120018, #071428);
   border-top:1px solid rgba(255,0,255,0.12);
   border-bottom:1px solid rgba(0,255,255,0.12);
 }
@@ -226,7 +228,7 @@ body::before{
 /* ── PRICING ────────────────────────── */
 .pricing{
   padding:80px 20px;
-  background: linear-gradient(180deg, #08001a, #000008);
+  background: linear-gradient(180deg, #0e0028, #07091a);
   border-top:1px solid rgba(0,255,255,0.1);
 }
 .pricing-container{ max-width:1100px; margin:0 auto; text-align:center; }
