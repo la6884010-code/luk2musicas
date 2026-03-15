@@ -1028,8 +1028,8 @@ function render(ts){
   // BPM + bars
   document.getElementById('bpmDisplay').textContent=bpm>0?bpm:'---';
   if(analyser&&freqData){
-    barRanges.forEach((r,i)=>document.getElementById(barIds[i]).style.height=Math.max(2,band(r[0],r[1])*150)+'px');
-    barRanges.forEach((r,i)=>document.getElementById(wlIds[i]).style.height=Math.max(2,band(r[0],r[1])*150)+'px');
+    barRanges.forEach((r,i)=>document.getElementById(barIds[i]).style.height=Math.max(2,band(r[0],r[1])*100)+'px');
+    barRanges.forEach((r,i)=>document.getElementById(wlIds[i]).style.height=Math.max(2,band(r[0],r[1])*100)+'px');
   }
 
   // Camera Move effect
