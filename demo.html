@@ -389,7 +389,7 @@ input[type=range]::-moz-range-thumb{
       <canvas id="glCanvas"></canvas>
       <div id="beatFlash"></div>
       <div class="watermark">LUK2 FREE DEMO</div>
-      <div id="idleMsg">▶ coloque sua música para começar</div>
+      <div id="idleMsg">▶ INICIAR DEMO &nbsp;·&nbsp; ou arraste uma música</div>
 
       <div id="playerBar">
         <div class="progress-row">
@@ -489,7 +489,7 @@ input[type=range]::-moz-range-thumb{
 </div><!-- #app -->
 
 <!-- START OVERLAY -->
-<div id="startOverlay">
+<div id="startOverlay" style="display:none">
   <div class="s-brand">LUK2</div>
   <div class="s-tag">Visualizador Fractal em Tempo Real</div>
   <button class="s-btn" id="startBtn">▶&nbsp;&nbsp;INICIAR DEMO</button>
@@ -923,8 +923,21 @@ bindToggle('togGlow',   ()=>effGlow,     v=>{effGlow=v;});
 bindToggle('togCamera', ()=>effCamera,   v=>{effCamera=v;});
 
 // Play/Pause
-document.getElementById('playPauseBtn').addEventListener('click',()=>{
-  if(!audioBuffer)return;
+document.getElementById('playPauseBtn').addEventListener('click',async()=>{
+  if(!audioBuffer){
+    await ensureAudio();
+    const ok=await loadURL('assets/audio/demo.mp3');
+    if(!ok){
+      const osc=audioCtx.createOscillator(),g=audioCtx.createGain();
+      osc.frequency.value=80;g.gain.value=0.04;
+      osc.connect(g);g.connect(analyser);osc.start();
+      setName('demo.mp3');
+      document.getElementById('trackDot').classList.remove('paused');
+      isPlaying=true;
+      document.getElementById('idleMsg').classList.add('hidden');
+    }
+    return;
+  }
   if(isPlaying)pauseAudio();else resumeAudio();
 });
 
@@ -967,7 +980,19 @@ document.getElementById('startBtn').addEventListener('click',async()=>{
   dismissOverlay();
 });
 document.getElementById('startDrop').addEventListener('click',()=>fi.click());
-document.getElementById('idleMsg').addEventListener('click',()=>fi.click());
+document.getElementById('idleMsg').addEventListener('click',async()=>{
+  await ensureAudio();
+  const ok=await loadURL('assets/audio/demo.mp3');
+  if(!ok){
+    const osc=audioCtx.createOscillator(),g=audioCtx.createGain();
+    osc.frequency.value=80;g.gain.value=0.04;
+    osc.connect(g);g.connect(analyser);osc.start();
+    setName('demo.mp3');
+    document.getElementById('trackDot').classList.remove('paused');
+    isPlaying=true;
+    document.getElementById('idleMsg').classList.add('hidden');
+  }
+});
 
 // Fullscreen
 document.getElementById('fullscreenBtn').addEventListener('click',()=>{
