@@ -562,18 +562,19 @@ body::before{
   border-bottom: 1px solid rgba(255, 0, 255, 0.18);
 }
 
-/* fade inferior: dissolve o iframe no fundo da landing */
+/* fade inferior: cobre o preto do canvas antes da transição */
 .experience-section::after {
   content: "";
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 90px;
+  height: 200px;
   background: linear-gradient(
     to bottom,
     transparent 0%,
-    rgba(7, 9, 26, 0.60) 55%,
+    rgba(7, 9, 26, 0.45) 35%,
+    rgba(7, 9, 26, 0.88) 65%,
     var(--bg) 100%
   );
   pointer-events: none;

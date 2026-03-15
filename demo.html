@@ -131,13 +131,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0c0d15;color:#fff;f
 ══════════════════════════════ */
 #canvasWrap{
   flex:1;position:relative;overflow:hidden;background:#000;min-width:0;
-  box-shadow:inset 2px 0 10px rgba(255,0,255,0.015),inset -2px 0 10px rgba(0,200,255,0.012);
-}
-#canvasWrap::before{
-  content:'';position:absolute;inset:0;pointer-events:none;z-index:4;
-  background:
-    radial-gradient(ellipse 40px 100% at 0% 50%,rgba(255,0,255,0.02),transparent 60%),
-    radial-gradient(ellipse 40px 100% at 100% 50%,rgba(0,200,255,0.018),transparent 60%);
+  box-shadow:inset 1px 0 8px rgba(255,0,255,0.010),inset -1px 0 8px rgba(0,200,255,0.008);
 }
 #glCanvas{
   display:block;position:absolute;top:0;left:0;width:100%;height:100%;
