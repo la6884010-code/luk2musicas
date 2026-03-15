@@ -562,20 +562,19 @@ body::before{
   border-bottom: 1px solid rgba(255, 0, 255, 0.18);
 }
 
-/* fade inferior: cobre completamente os últimos pixels do iframe */
+/* fade inferior: dissolve o iframe no fundo da landing */
 .experience-section::after {
   content: "";
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 180px;
+  height: 90px;
   background: linear-gradient(
     to bottom,
     transparent 0%,
-    rgba(0, 0, 8, 0.55) 40%,
-    rgba(0, 0, 8, 0.90) 72%,
-    #000008 100%
+    rgba(7, 9, 26, 0.60) 55%,
+    var(--bg) 100%
   );
   pointer-events: none;
   z-index: 5;
