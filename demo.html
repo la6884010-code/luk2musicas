@@ -51,12 +51,18 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0c0d15;color:#fff;f
 }
 .tb-icon:hover{background:rgba(255,255,255,0.1);color:#fff;}
 .tb-export{
-  padding:0 12px;height:28px;border-radius:6px;border:1px solid rgba(124,92,247,0.35);
-  background:rgba(124,92,247,0.15);color:rgba(200,180,255,0.9);
+  padding:0 12px;height:28px;border-radius:6px;
+  border:1px solid rgba(255,0,255,0.45);
+  background:linear-gradient(90deg,rgba(255,0,255,0.22),rgba(0,100,255,0.18));
+  color:#fff;
   font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;
   cursor:pointer;transition:all 0.2s;white-space:nowrap;
+  box-shadow:0 0 10px rgba(255,0,255,0.25);
 }
-.tb-export:hover{background:rgba(124,92,247,0.28);color:#fff;}
+.tb-export:hover{
+  background:linear-gradient(90deg,rgba(255,0,255,0.40),rgba(0,140,255,0.35));
+  box-shadow:0 0 18px rgba(255,0,255,0.50),0 0 36px rgba(0,150,255,0.22);
+}
 
 /* ══════════════════════════════
    MAIN AREA
@@ -89,25 +95,49 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0c0d15;color:#fff;f
 .nav-item.active .nav-icon{opacity:1;}
 .pro-block{
   margin:10px;border-radius:10px;padding:12px;flex-shrink:0;
-  background:linear-gradient(135deg,rgba(124,92,247,0.14),rgba(60,40,180,0.08));
-  border:1px solid rgba(124,92,247,0.22);
+  position:relative;
+  background:linear-gradient(135deg,rgba(255,0,255,0.09),rgba(0,80,255,0.06));
+  border:1px solid transparent;
+  background-clip:padding-box;
 }
-.pro-badge{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;color:#f0c040;letter-spacing:1px;margin-bottom:7px;}
+.pro-block::before{
+  content:'';position:absolute;inset:0;border-radius:10px;padding:1px;
+  background:linear-gradient(135deg,#ff00ff,#0066ff,#00ffff);
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;
+  pointer-events:none;
+}
+.pro-badge{
+  font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:7px;
+  background:linear-gradient(90deg,#ff00ff,#00ccff);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
 .pro-feat{font-size:9px;color:rgba(255,255,255,0.5);padding:2px 0;letter-spacing:0.2px;}
 .pro-feat::before{content:'✓  ';}
 .pro-btn{
   width:100%;margin-top:9px;padding:7px;border-radius:6px;border:none;
-  background:linear-gradient(135deg,#7c5cf7,#5848cc);
+  background:linear-gradient(135deg,#ff00ff,#0066ff,#00ffff);
   color:#fff;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;
   cursor:pointer;transition:all 0.2s;
+  box-shadow:0 0 14px rgba(255,0,255,0.35);
 }
-.pro-btn:hover{background:linear-gradient(135deg,#9472ff,#6e5ee0);}
+.pro-btn:hover{
+  background:linear-gradient(135deg,#ff44ff,#0088ff,#00ffff);
+  box-shadow:0 0 22px rgba(255,0,255,0.55),0 0 40px rgba(0,150,255,0.28);
+}
 
 /* ══════════════════════════════
    CANVAS AREA
 ══════════════════════════════ */
 #canvasWrap{
   flex:1;position:relative;overflow:hidden;background:#000;min-width:0;
+  box-shadow:inset 8px 0 40px rgba(255,0,255,0.08),inset -8px 0 40px rgba(0,200,255,0.07);
+}
+#canvasWrap::before{
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:4;
+  background:
+    radial-gradient(ellipse 120px 100% at 0% 50%,rgba(255,0,255,0.13),transparent 80%),
+    radial-gradient(ellipse 120px 100% at 100% 50%,rgba(0,200,255,0.11),transparent 80%);
 }
 #glCanvas{
   display:block;position:absolute;top:0;left:0;width:100%;height:100%;
@@ -117,7 +147,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0c0d15;color:#fff;f
   border:3px solid rgba(120,170,255,0);
   transition:border-color 0.03s ease,opacity 0.08s ease;opacity:0;
 }
-#beatFlash.active{border-color:rgba(120,170,255,0.9);opacity:1;}
+#beatFlash.active{border-color:rgba(255,0,255,0.9);opacity:1;box-shadow:inset 0 0 30px rgba(255,0,200,0.12);}
 .watermark{
   position:absolute;bottom:74px;right:10px;z-index:6;pointer-events:none;
   font-family:'Syne',sans-serif;font-size:9px;font-weight:700;
@@ -156,7 +186,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0c0d15;color:#fff;f
 }
 .prog-fill{
   height:100%;width:0%;
-  background:linear-gradient(90deg,#7c5cf7,#a484ff);
+  background:linear-gradient(90deg,#ff00ff,#0066ff,#00ffff);
   border-radius:2px;transition:width 0.25s linear;pointer-events:none;
 }
 .player-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
@@ -179,16 +209,20 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0c0d15;color:#fff;f
 .pb-btn:hover{background:rgba(255,255,255,0.12);color:#fff;}
 .pb-play{
   width:32px;height:32px;font-size:13px;
-  background:rgba(124,92,247,0.28);color:#fff;
-  border:1px solid rgba(124,92,247,0.45);
+  background:rgba(255,0,255,0.22);color:#fff;
+  border:1px solid rgba(255,0,255,0.55);
+  box-shadow:0 0 14px rgba(255,0,255,0.38),0 0 28px rgba(0,100,255,0.18);
 }
-.pb-play:hover{background:rgba(124,92,247,0.48);}
+.pb-play:hover{
+  background:rgba(255,0,255,0.40);
+  box-shadow:0 0 22px rgba(255,0,255,0.65),0 0 44px rgba(0,200,255,0.28);
+}
 .player-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
 .bpm-box{text-align:right;}
 .bpm-val{font-size:19px;font-weight:700;color:rgba(255,255,255,0.85);line-height:1;}
 .bpm-lbl{font-size:8px;color:rgba(255,255,255,0.28);letter-spacing:2px;}
 .bars{display:flex;align-items:flex-end;gap:2px;height:24px;}
-.bar{width:3px;border-radius:2px;background:rgba(120,170,255,0.5);min-height:2px;transition:height 0.04s ease;}
+.bar{width:3px;border-radius:2px;background:linear-gradient(to top,rgba(255,0,200,0.75),rgba(0,200,255,0.55));min-height:2px;transition:height 0.04s ease;}
 
 /* ══════════════════════════════
    RIGHT PANEL
@@ -376,7 +410,7 @@ input[type=range]::-moz-range-thumb{
         <div class="nav-item" data-sec="sobre"><span class="nav-icon">ℹ</span>Sobre</div>
       </nav>
       <div class="pro-block">
-        <div class="pro-badge">⭐ LUK2 PRO</div>
+        <div class="pro-badge">♛ LUK2 PRO</div>
         <div class="pro-feat">4K Render</div>
         <div class="pro-feat">Sem Marca</div>
         <div class="pro-feat">Autopilot</div>
