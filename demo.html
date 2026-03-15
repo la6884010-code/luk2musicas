@@ -641,7 +641,7 @@ vec3 pal(float t,float co,float intensity){
     c=vec3(0.5,1.0,0.8);
     d=vec3(0.5,0.0,0.0);
   }
-  b*=1.5+intensity*1.2;
+  b*=0.85+intensity*1.2;
   return a+b*cos(6.28318*(c*t+d));
 }
 #define PAL(t) pal(t,u_color_offset,u_audio)
