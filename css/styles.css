@@ -546,3 +546,20 @@ body::before{
   transform: scaleX(1.2);
   opacity: 0.9;
 }
+/* ══════════════════════════════
+   Experience Section (iframe demo)
+══════════════════════════════ */
+.experience-section {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+  background: #000;
+}
+
+.experience-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}

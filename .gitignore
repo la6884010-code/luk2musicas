@@ -1,5 +1,6 @@
 testes_validados.html
-assets/audio/
+assets/audio/*
+!assets/audio/demo.mp3
 *.mp3
 *.wav
 *.ogg
