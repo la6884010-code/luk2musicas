@@ -458,7 +458,24 @@ input[type=range]::-moz-range-thumb{
               <div class="bar" id="wl29"></div><div class="bar" id="wl30"></div>
               <div class="bar" id="wl31"></div><div class="bar" id="wl32"></div>
               <div class="bar" id="wl33"></div><div class="bar" id="wl34"></div>
-              <div class="bar" id="wl35"></div>
+              <div class="bar" id="wl35"></div><div class="bar" id="wl36"></div>
+              <div class="bar" id="wl37"></div><div class="bar" id="wl38"></div>
+              <div class="bar" id="wl39"></div><div class="bar" id="wl40"></div>
+              <div class="bar" id="wl41"></div><div class="bar" id="wl42"></div>
+              <div class="bar" id="wl43"></div><div class="bar" id="wl44"></div>
+              <div class="bar" id="wl45"></div><div class="bar" id="wl46"></div>
+              <div class="bar" id="wl47"></div><div class="bar" id="wl48"></div>
+              <div class="bar" id="wl49"></div><div class="bar" id="wl50"></div>
+              <div class="bar" id="wl51"></div><div class="bar" id="wl52"></div>
+              <div class="bar" id="wl53"></div><div class="bar" id="wl54"></div>
+              <div class="bar" id="wl55"></div><div class="bar" id="wl56"></div>
+              <div class="bar" id="wl57"></div><div class="bar" id="wl58"></div>
+              <div class="bar" id="wl59"></div><div class="bar" id="wl60"></div>
+              <div class="bar" id="wl61"></div><div class="bar" id="wl62"></div>
+              <div class="bar" id="wl63"></div><div class="bar" id="wl64"></div>
+              <div class="bar" id="wl65"></div><div class="bar" id="wl66"></div>
+              <div class="bar" id="wl67"></div><div class="bar" id="wl68"></div>
+              <div class="bar" id="wl69"></div><div class="bar" id="wl70"></div>
             </div>
           </div>
           <div class="pb-btns">
@@ -485,7 +502,24 @@ input[type=range]::-moz-range-thumb{
               <div class="bar" id="b29"></div><div class="bar" id="b30"></div>
               <div class="bar" id="b31"></div><div class="bar" id="b32"></div>
               <div class="bar" id="b33"></div><div class="bar" id="b34"></div>
-              <div class="bar" id="b35"></div>
+              <div class="bar" id="b35"></div><div class="bar" id="b36"></div>
+              <div class="bar" id="b37"></div><div class="bar" id="b38"></div>
+              <div class="bar" id="b39"></div><div class="bar" id="b40"></div>
+              <div class="bar" id="b41"></div><div class="bar" id="b42"></div>
+              <div class="bar" id="b43"></div><div class="bar" id="b44"></div>
+              <div class="bar" id="b45"></div><div class="bar" id="b46"></div>
+              <div class="bar" id="b47"></div><div class="bar" id="b48"></div>
+              <div class="bar" id="b49"></div><div class="bar" id="b50"></div>
+              <div class="bar" id="b51"></div><div class="bar" id="b52"></div>
+              <div class="bar" id="b53"></div><div class="bar" id="b54"></div>
+              <div class="bar" id="b55"></div><div class="bar" id="b56"></div>
+              <div class="bar" id="b57"></div><div class="bar" id="b58"></div>
+              <div class="bar" id="b59"></div><div class="bar" id="b60"></div>
+              <div class="bar" id="b61"></div><div class="bar" id="b62"></div>
+              <div class="bar" id="b63"></div><div class="bar" id="b64"></div>
+              <div class="bar" id="b65"></div><div class="bar" id="b66"></div>
+              <div class="bar" id="b67"></div><div class="bar" id="b68"></div>
+              <div class="bar" id="b69"></div><div class="bar" id="b70"></div>
             </div>
             <div class="track-dot paused" id="trackDot"></div>
             <div class="track-name" id="trackName">Nenhuma música</div>
@@ -980,11 +1014,12 @@ function buildColors(){
 //  Render Loop
 // ═══════════════════════════════════════════
 let startT=null,curT=0;
-const barIds=['b1','b2','b3','b4','b5','b6','b7','b8','b9','b10','b11','b12','b13','b14','b15','b16','b17','b18','b19','b20','b21','b22','b23','b24','b25','b26','b27','b28','b29','b30','b31','b32','b33','b34','b35'];
-const wlIds=['wl1','wl2','wl3','wl4','wl5','wl6','wl7','wl8','wl9','wl10','wl11','wl12','wl13','wl14','wl15','wl16','wl17','wl18','wl19','wl20','wl21','wl22','wl23','wl24','wl25','wl26','wl27','wl28','wl29','wl30','wl31','wl32','wl33','wl34','wl35'];
+const barIds=['b1','b2','b3','b4','b5','b6','b7','b8','b9','b10','b11','b12','b13','b14','b15','b16','b17','b18','b19','b20','b21','b22','b23','b24','b25','b26','b27','b28','b29','b30','b31','b32','b33','b34','b35','b36','b37','b38','b39','b40','b41','b42','b43','b44','b45','b46','b47','b48','b49','b50','b51','b52','b53','b54','b55','b56','b57','b58','b59','b60','b61','b62','b63','b64','b65','b66','b67','b68','b69','b70'];
+const wlIds=['wl1','wl2','wl3','wl4','wl5','wl6','wl7','wl8','wl9','wl10','wl11','wl12','wl13','wl14','wl15','wl16','wl17','wl18','wl19','wl20','wl21','wl22','wl23','wl24','wl25','wl26','wl27','wl28','wl29','wl30','wl31','wl32','wl33','wl34','wl35','wl36','wl37','wl38','wl39','wl40','wl41','wl42','wl43','wl44','wl45','wl46','wl47','wl48','wl49','wl50','wl51','wl52','wl53','wl54','wl55','wl56','wl57','wl58','wl59','wl60','wl61','wl62','wl63','wl64','wl65','wl66','wl67','wl68','wl69','wl70'];
 const barRanges=[
   [20,40],[40,70],[70,110],[110,180],[180,280],[280,420],[420,600],[600,900],[900,1400],[1400,2200],[2200,3500],[3500,5500],[5500,9000],[9000,16000],
-  [20,32],[32,50],[50,75],[75,100],[100,140],[140,190],[190,260],[260,350],[350,460],[460,610],[610,810],[810,1070],[1070,1420],[1420,1880],[1880,2490],[2490,3300],[3300,4360],[4360,5760],[5760,7620],[7620,10080],[10080,16000]
+  [20,32],[32,50],[50,75],[75,100],[100,140],[140,190],[190,260],[260,350],[350,460],[460,610],[610,810],[810,1070],[1070,1420],[1420,1880],[1880,2490],[2490,3300],[3300,4360],[4360,5760],[5760,7620],[7620,10080],[10080,16000],
+  [20,24],[24,29],[29,35],[35,43],[43,52],[52,63],[63,76],[76,92],[92,111],[111,134],[134,162],[162,196],[196,237],[237,286],[286,346],[346,418],[418,506],[506,611],[611,739],[739,893],[893,1080],[1080,1306],[1306,1579],[1579,1909],[1909,2308],[2308,2791],[2791,3374],[3374,4078],[4078,4930],[4930,5961],[5961,7207],[7207,8714],[8714,10534],[10534,12734],[12734,16000]
 ];
 
 function render(ts){
